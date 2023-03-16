@@ -2,9 +2,9 @@
 class Individuo():
     id = ""
     bloque = 0
-    materias = []
+    asignaturas = []
 
-    def __init__(self, id, bloque, materias):
+    def __init__(self, id, bloque, asignaturas):
         self.id = id
         self.bloque = bloque
-        self.materias = materias
+        self.asignaturas = asignaturas
