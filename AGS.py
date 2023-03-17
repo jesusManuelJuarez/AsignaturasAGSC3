@@ -86,7 +86,6 @@ class AGS(object):
 
     def fitness(self):
         print("se calcula el fitness")
-
     #VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self):
         print("se valida la cadena")
