@@ -84,8 +84,25 @@ class AGS(object):
     def pruning(self):
         print("-----PODA......")
 
-    def fitness(self):
-        print("se calcula el fitness")
+    def fitness(self, individuo):
+        print("-------Fitness........")
+        # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
+        fitness = 0
+        aux_fitness = 0
+        lista_asignaturas = individuo.get_asignaturas()
+        # La lista de asignaturas debería estar estructurada de la siguiente manera:
+        # N° Cuatri y Clave asignatura. p.e:
+        # lista_asignaturas = [[5][MDD],[8][IA],etc]
+        for asignatura in lista_asignaturas:
+            # Asignatura = [5][MDD]
+            aux_fitness += self.cu_a - asignatura[0]
+            # Asignatura siguiente = [8][IA], etc.
+        fitness = aux_fitness / len(lista_asignaturas)
+        individuo.set_fitness(fitness)
+        # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
+        # [[5][MDD],[8][IA]] = 6.5
+        # [[4][LSA],[5][DS]] = 8.5 <- Combinación más apta
+
     #VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self):
         print("se valida la cadena")
