@@ -1,5 +1,7 @@
 from Individuo import *
 import random
+
+
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
     num_epoch = 0
@@ -8,9 +10,10 @@ class AGS(object):
     pob_total = []
     univer_mg = []
     cua_lim = 15
+
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
     def __init__(self, epoch, pc, po, cu_a, matricula, asignaturas):
-        #LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
+        # LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
         self.pob_total.clear()
         # PARARAMETROS DE LA INTERFAZ GRAFICA
         self.epoch = epoch
@@ -20,7 +23,7 @@ class AGS(object):
         self.matricula = matricula
         self.asignaturas = asignaturas
 
-        #EJECUTA HASTA EL NUMERO DE EPOCAS ASIGNADAS EN epoch
+        # EJECUTA HASTA EL NUMERO DE EPOCAS ASIGNADAS EN epoch
         while True:
             # IMPLEMETANCION DE METODOS AGS
             self.create_init()
@@ -30,7 +33,7 @@ class AGS(object):
             self.pruning()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_epoch += 1
-            #CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A EPOCH
+            # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A EPOCH
             if self.num_epoch == epoch:
                 # TEST PRINT
                 self.print_test()
@@ -46,11 +49,26 @@ class AGS(object):
             id = len(self.pob_total)
             bloque = self.cua_lim - self.cu_a
 
+            # CREAR UN ARREGLO DE ASIGNATURAS
+            asignaturas = []
             # SEPARACION POR COMA DE UNA CADENA DE ASIGNATURAS
             asignaturas_s = self.asignaturas.split(",")
             random.shuffle(asignaturas_s)
 
-            #CREACION DE INDIVODUO
+            # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
+            asignaturas.append(asignaturas_s)
+            for i in range(1, bloque):
+
+                # CREA UNA FILA NUEVA EN LA MATRIZ DE ARREGLOS
+                asignaturas.append([])
+
+                for r in range(int(len(asignaturas_s) / bloque)):
+
+                    # SE AGREGA A LA UNEVA FILA PARA RELLENAR ASIGNATURAS
+                    asignaturas[i].append(asignaturas[i - 1].pop())
+            print(asignaturas)
+
+            # CREACION DE INDIVODUO
             individuo = Individuo(id, bloque, asignaturas_s)
 
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
@@ -71,7 +89,6 @@ class AGS(object):
             if list_value[i] <= self.pc:
                 indv = self.pob_total[i]
                 self.pob_selec.append(indv)
-
 
     # FUNCION PARA LA CRUZA
     def cross(self):
@@ -103,7 +120,7 @@ class AGS(object):
         # [[5][MDD],[8][IA]] = 6.5
         # [[4][LSA],[5][DS]] = 8.5 <- Combinación más apta
 
-    #VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
+    # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self):
         print("se valida la cadena")
 
@@ -116,6 +133,6 @@ class AGS(object):
         # IMPRIME A LOS INDIVIDUOS PARA DESPUES
         for i in range(len(self.pob_total)):
             print("--------------------")
-            print("ID:",self.pob_total[i].id)
+            print("ID:", self.pob_total[i].id)
             print("BLOQUE:", self.pob_total[i].bloque)
             print("ASIGNATURAS", self.pob_total[i].asignaturas)

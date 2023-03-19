@@ -2,6 +2,7 @@
 import streamlit as ts
 from Individuo import *
 from AGS import *
+
 # Press Mayús+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
@@ -15,7 +16,7 @@ if __name__ == '__main__':
     # CREACION DE FORMULARIO EN STREAMLIT
     form = ts.form(key="my_form")
     po = form.text_input("Ingrese PO")
-    pc = form.text_input("Ingrese PC")
+    pc = 0.5
     epoch = form.text_input("Ingrese EPOCA")
     cu_a = form.text_input("Ingrese CUATRIMESTRE ACTUAL")
     matricula = form.text_input("Ingrese MATRICULA")
@@ -24,5 +25,5 @@ if __name__ == '__main__':
 
     if submit_button:
         # CREACION DE INDIVIDUO
-        algoritmo_g = AGS(int(epoch), float(pc),int(po), int(cu_a), int(matricula), asignaturas)
+        algoritmo_g = AGS(int(epoch), pc, int(po), int(cu_a), int(matricula), asignaturas)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
