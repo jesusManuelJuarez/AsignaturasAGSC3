@@ -100,25 +100,41 @@ class AGS(object):
 
     def pruning(self):
         print("-----PODA......")
+        # Ordena la lista de individuos (pob total) de menor a mayoy segun su valor de aptitud (fitness)
+        self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
+        # Si hay menos de 3 valores, solo elimina 1 para que se puedan seguir cruzando
+        if len(self.pob_total) <= 3:
+            self.pob_total.pop(0)
+        # Sino, elimina a dos
+        elif len(self.pob_total) > 3:
+            for _ in range(2):
+                self.pob_total.pop(0)
 
     def fitness(self, individuo):
         print("-------Fitness........")
         # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
         fitness = 0
-        aux_fitness = 0
-        lista_asignaturas = individuo.get_asignaturas()
+        plan_estudios = individuo.get_asignaturas()
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
         # N° Cuatri y Clave asignatura. p.e:
-        # lista_asignaturas = [[5][MDD],[8][IA],etc]
-        for asignatura in lista_asignaturas:
-            # Asignatura = [5][MDD]
-            aux_fitness += self.cu_a - asignatura[0]
-            # Asignatura siguiente = [8][IA], etc.
-        fitness = aux_fitness / len(lista_asignaturas)
+        # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]
+        for cuatrimestre in plan_estudios:
+            aux_fitness = 0
+            # recorre cada arreglo de la matriz (cuatrimestre)
+            # cuatrimestre = ['5MDD','8IA','8CAS']
+            for asignatruas in cuatrimestre:
+                # recorre cada asignatura del cuatrismtre
+                # p.e. primero '5DD', luego '8IA', etc.
+                num_cuatri = asignatruas[0]
+                aux_fitness += self.cu_a - num_cuatri
+            # una vez terminado de recorrer el cuatri, divide entre el numero de asignaturas del cuatri.
+            aux_fitness = aux_fitness / len(asignatruas)
+            # se procede a sumar
+            fitness += aux_fitness
         individuo.set_fitness(fitness)
         # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
-        # [[5][MDD],[8][IA]] = 6.5
-        # [[4][LSA],[5][DS]] = 8.5 <- Combinación más apta
+        # ['5MDD','8IA'] = 6.5
+        # ['4LSA','5DS'] = 8.5 <- Combinación más apta
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self):
