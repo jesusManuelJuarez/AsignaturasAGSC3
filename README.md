@@ -8,5 +8,5 @@ pip install streamlit
 
  # CORRER PROYECTO EN LINEA DE TERMINAL
 ```bash
- streamlit run main.py
+streamlit run main.py
  ```
