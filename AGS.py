@@ -177,9 +177,9 @@ class AGS(object):
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo, asignaturas):
-        cuatrimestre_cursar = self.cu_a + 1
+        cuatrimestre_cursasado = self.cu_a - 1
 
-        validatiion = self.validar_part_1(self.cu_a, cuatrimestre_cursar, individuo.get_asignaturas(), asignaturas)
+        validatiion = self.validar_part_1(cuatrimestre_cursasado, self.cu_a, individuo.get_asignaturas(), asignaturas)
         return validatiion  
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
@@ -200,7 +200,7 @@ class AGS(object):
                 validate = self.validar_part_2(mat, materias_cursar, materias_validas)
                 if not validate:
                     return False
-                materias_validas.append(mat[1:]) 
+                materias_validas.append(mat)
             cuatrimestre_cursar += 1
             print("-"*50)
         return True
