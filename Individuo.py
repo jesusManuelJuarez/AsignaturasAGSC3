@@ -24,3 +24,6 @@ class Individuo():
 
     def set_fitness(self, fitness):
         self.fitness = fitness
+        
+    def get_asignaturas(self):
+        return self.asignaturas
