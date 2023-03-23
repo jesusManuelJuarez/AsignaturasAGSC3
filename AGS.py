@@ -111,7 +111,6 @@ class AGS(object):
             #VERIFICAR QUE EL INDIVIDUO SEA VALIDO
             verificar = self.validacion(individuo, asignaturas)
             if not verificar:
-                i -= 1
                 self.pob_total.pop()
 
     # FUNCION PARA SELECCION A LOS INVIDUOS QUE PASARAN A PROCESO DE CRUZA |PC|
