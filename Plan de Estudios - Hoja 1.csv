@@ -1,0 +1,8 @@
+Cuatrimestre 1,Cuatrimestre 2,Cuatrimestre 3,Cuatrimestre 4,Cuatrimestre 5,Cuatrimestre 6,Cuatrimestre 7,Cuatrimestre 8,Cuatrimestre 9
+INGI,INGII [*Seriada*] [INGI],INGIII  [*Seriada*] [INGII],INGIV  [*Seriada*] [INGIII],INGV  [*Seriada*] [INGIV],INGVI  [*Seriada*] [INGV],INGVII  [*Seriada*] [INGVI],INGVIII  [*Seriada*] [INGVII],INGIX  [*Seriada*] [INGVIII]
+QUB,DHV,IEMC [*Seriada*] [DHV],HCC,ETP,HAG,LEAD,PRMI [*Seriada*] [PRC],PRMII [*Seriada*] [PRMI]
+ALL,CAD,CAI [*Seriada*] [CAD],MPI [*Seriada*] [CAI],MPII [*Seriada*] [MPI],PRE,LEA [*Seriada*] [PRW],COI [*Seriada*] [LEA],SEI [*Seriada*] [PRMI]
+FUC,POO [*Seriada*] [ALG],PRV [*Seriada*] [POO],PRW [*Seriada*] [PRV],PCS [*Seriada*] [PRW],ARC [*Seriada*] [SID],SIO [*Seriada*] [RED-PCS],INA [*Seriada*] [PRE-MAD],[7]MID [*Seriada*] [BAD]
+ALG,ESD [*Seriada*] [ALG],EDA [*Seriada*] [EDA],DII,FUR,RED,PRC [*Seriada*] [PCS],AFS [*Seriada*] [PRS],APS [*Seriada*] [AFS]
+MAD,ISAC,FBD,[6]BAD [*Seriada*] [FBD],ARS [*Seriada*] [IRS],CAS [*Seriada*] [ARS],PRS [*Seriada*] [CAS],MAS [*Seriada*] [PRS],SOA [*Seriada*] [SIO-PRC]
+EOEI,PDS,IRS [*Seriada*] [PDS],ELM,SID [*Seriada*] [ELM],ESTI [*Seriada*] [PRW-FBD],ESTII [*Seriada*] [ESTI],MDD [*Seriada*] [DII],EOEII [*Seriada*] [EOEI]
