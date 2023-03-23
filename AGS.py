@@ -36,7 +36,7 @@ class AGS(object):
     }
 
     # Cargamos el archivo CSV en un DataFrame
-    df = pd.read_csv("AsignaturasAGSC3\Plan de Estudios.csv")
+    df = pd.read_csv(".\Plan de Estudios.csv")
 
     # Extraemos la columna "Model" y eliminamos los valores duplicados
     materias = df["Materia"]
