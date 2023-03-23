@@ -178,7 +178,6 @@ class AGS(object):
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo, asignaturas):
-        print("se valida la cadena")
         cuatrimestre_cursar = self.cu_a + 1
 
         validatiion = self.validar_part_1(self.cu_a, cuatrimestre_cursar, individuo.get_asignaturas(), asignaturas)
