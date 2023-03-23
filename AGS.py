@@ -1,5 +1,6 @@
 from Individuo import *
 import random
+import pandas as pd
 
 
 class AGS(object):
@@ -10,6 +11,39 @@ class AGS(object):
     pob_total = []
     univer_mg = []
     cua_lim = 15
+    materias_list = []
+    cuatrimestres = {
+        1 : [3,1],
+        2 : [1,2],
+        3 : [2,3],
+        4 : [3,1],
+        5 : [1,2],
+        6 : [2,3],
+        7 : [3,1],
+        8 : [1,2],
+        9 : [2,3],
+        10 : [3,1],
+        11 : [1,2],
+        12 : [2,3],
+        13 : [3,1],
+        14 : [1,2],
+    }
+        
+    periodos = {
+        1 : ["1","2","4","5","7","8","10","13","14"],
+        2 : ["2","3","5","6","8","9","11","12","14"],
+        3 : ["1","3","4","6","7","9","10","12","13"]
+    }
+
+    # Cargamos el archivo CSV en un DataFrame
+    df = pd.read_csv("AsignaturasAGSC3\Plan de Estudios.csv")
+
+    # Extraemos la columna "Model" y eliminamos los valores duplicados
+    materias = df["Materia"]
+    seriadas = df["Seriacion"]
+    materias = list(materias)
+    seriadas = list(seriadas)
+    
 
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
     def __init__(self, epoch, pc, po, cu_a, matricula, asignaturas):
@@ -57,7 +91,7 @@ class AGS(object):
 
             # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
             asignaturas.append(asignaturas_s)
-            for i in range(1, bloque):
+            for j in range(1, bloque):
 
                 # CREA UNA FILA NUEVA EN LA MATRIZ DE ARREGLOS
                 asignaturas.append([])
@@ -65,14 +99,20 @@ class AGS(object):
                 for r in range(int(len(asignaturas_s) / bloque)):
 
                     # SE AGREGA A LA UNEVA FILA PARA RELLENAR ASIGNATURAS
-                    asignaturas[i].append(asignaturas[i - 1].pop())
+                    asignaturas[j].append(asignaturas[j - 1].pop())
             print(asignaturas)
 
             # CREACION DE INDIVODUO
             individuo = Individuo(id, bloque, asignaturas_s)
-
+            
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
             self.pob_total.append(individuo)
+            
+            #VERIFICAR QUE EL INDIVIDUO SEA VALIDO
+            verificar = self.validacion(individuo, asignaturas)
+            if not verificar:
+                i -= 1
+                self.pob_total.pop()
 
     # FUNCION PARA SELECCION A LOS INVIDUOS QUE PASARAN A PROCESO DE CRUZA |PC|
     def selection(self):
@@ -137,8 +177,57 @@ class AGS(object):
         # ['4LSA','5DS'] = 8.5 <- Combinación más apta
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
-    def validacion(self):
+    def validacion(self, individuo, asignaturas):
         print("se valida la cadena")
+        cuatrimestre_cursar = self.cu_a + 1
+
+        validatiion = self.validar_part_1(self.cu_a, cuatrimestre_cursar, individuo.get_asignaturas(), asignaturas)
+        return validatiion  
+
+    # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
+    def validar_part_1(self, cuatrimestre_anterior, cuatrimestre_cursar, lista_asignaturas, materias_cursar):
+        materias_validas = []
+        for cuatri in lista_asignaturas:
+            print("Cuatrimestre a cursar:\t\t", cuatrimestre_cursar)
+            for mat in cuatri:
+                print("Materia cargada en ese cuatri: ", mat)
+                if mat not in materias_cursar:
+                    return False
+                num_cuatri_mate = mat[0]
+                if int(num_cuatri_mate) < cuatrimestre_anterior:
+                    return False
+                periodos_actuales = self.cuatrimestres[cuatrimestre_cursar]
+                if (num_cuatri_mate in self.periodos[periodos_actuales[0]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[0]]) or (num_cuatri_mate in self.periodos[periodos_actuales[1]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[1]]):
+                    return False
+                validate = self.validar_part_2(mat, materias_cursar, materias_validas)
+                if not validate:
+                    return False
+                materias_validas.append(mat[1:]) 
+            cuatrimestre_cursar += 1
+            print("-"*50)
+        return True
+
+    # VALIDA QUE LAS MATERIAS CORRESPONDAN CON LA SERIACION Y SE RESPETE LA MISMA
+    def validar_part_2(self, mat, materias_cursar, materias_validas):
+        index = self.materias.index(mat)
+        aux_seriadas = []
+        if (len(self.seriadas[index]) > 4):
+            aux_seriadas = self.seriadas[index].split("-")
+        else:
+            aux_seriadas.append(self.seriadas[index])
+        print("Materia(s) seriadas: ", aux_seriadas)
+        if (len(aux_seriadas) > 1):
+            for ser in aux_seriadas:
+                if ser in materias_cursar and ser not in materias_validas:
+                    print(f"{ser} aun debe cursarse")
+                    return False
+            return True
+        if aux_seriadas[0] == "NAP":
+            return True
+        if aux_seriadas[0] in materias_cursar and aux_seriadas[0] not in materias_validas:
+            print(f"{aux_seriadas[0]} aun debe cursarse")
+            return False
+        return True
 
     # CORRECION DE LOS INDIVIDUOS
     def correccion(self):
