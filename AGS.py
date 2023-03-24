@@ -8,6 +8,8 @@ class AGS(object):
     num_epoch = 0
     pob_asig = []
     pob_selec = []
+    pob_cruza = []
+    pob_muta = []
     pob_total = []
     univer_mg = []
     cua_lim = 15
@@ -48,6 +50,7 @@ class AGS(object):
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
     def __init__(self, epoch, pc, po, cu_a, matricula, asignaturas):
         # LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
+        self.bloque = None
         self.pob_total.clear()
         # PARARAMETROS DE LA INTERFAZ GRAFICA
         self.epoch = epoch
@@ -81,7 +84,7 @@ class AGS(object):
         for i in range(self.po):
             # CARGANDO LOS ATRIBUTOS DE CADA INDIVIDUO
             id = len(self.pob_total)
-            bloque = self.cua_lim - self.cu_a
+            self.bloque = self.cua_lim - self.cu_a
 
             # CREAR UN ARREGLO DE ASIGNATURAS
             asignaturas = []
@@ -91,19 +94,19 @@ class AGS(object):
 
             # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
             asignaturas.append(asignaturas_s)
-            for j in range(1, bloque):
+            for j in range(1, self.bloque):
 
                 # CREA UNA FILA NUEVA EN LA MATRIZ DE ARREGLOS
                 asignaturas.append([])
 
-                for r in range(int(len(asignaturas_s) / bloque)):
+                for r in range(int(len(asignaturas_s) / self.bloque)):
 
                     # SE AGREGA A LA UNEVA FILA PARA RELLENAR ASIGNATURAS
                     asignaturas[j].append(asignaturas[j - 1].pop())
             print(asignaturas)
 
             # CREACION DE INDIVODUO
-            individuo = Individuo(id, bloque, asignaturas_s)
+            individuo = Individuo(id, self.bloque, asignaturas_s)
             
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
             self.pob_total.append(individuo)
@@ -132,10 +135,84 @@ class AGS(object):
     # FUNCION PARA LA CRUZA
     def cross(self):
         print(".........CRUZA.........")
+        pob_selec = self.pob_selec
+
+        asignaturas_s = self.materias_list
+        bloque = self.bloque
+
+        # INDIVIDUOS ORIGINALES CRUZADOS
+        print("-----ANTES DE CRUZA--------")
+        for g in range(len(pob_selec)):
+            print(pob_selec[g])
+
+        print("-------------")
+        # SE ITERA EN LA POBLACION SELECCIONADA A CRUZA
+        for i in range(len(pob_selec) - 1):
+            asig_c = []
+            # SE ITERA EN CADA BLOQUE DE LA POB SELECCIONA A CRUZA
+            for e in range(bloque):
+                asig_c.append(pob_selec[i][e] + pob_selec[i + 1][e])
+                # indiv_d.append(pob_selec[i+1][e] + pob_selec[i][e])
+
+            # CREACION DE INDIVODUO
+            individuo = Individuo(id, self.bloque, asig_c)
+            self.pob_cruza.append(individuo)
+            # pob_cruza.append(indiv_d)
+
+        # CORRECCION DE FALTANTES Y ELEMENTOS REPETIDOS
+        # SE ITERA POR CADA ASIGNATURA NO CURSADA
+        for search in range(len(asignaturas_s)):
+            print("-------------------------------")
+            print(asignaturas_s[search])
+            index = None
+            # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
+            for e in range(len(self.pob_cruza)):
+                print("---------------------")
+                cont = 0
+                # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
+                for i in range(len(self.pob_cruza[e].get_asignaturas())):
+
+                    print("--------------")
+                    # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
+                    for o in range(len(self.pob_cruza[e][i].get_asignaturas())):
+                        # SE BUSCA LA ASIGNATURA
+                        value = asignaturas_s[search] == self.pob_cruza[e][i][o].get_asignaturas()
+                        # SI SE ENCUENTRA ENTONCES SE SUMA +1
+                        if value:
+                            cont += 1
+                            # SE OBTIENE EL INDEX DONDE SE ENCONTRO $ SE USA TRY YA QUE SINO ENCUENTRA ENTONCES
+                            # CAUSA EXCEPCION
+                            try:
+                                index = self.pob_cruza[e][i].get_asignaturas().index(asignaturas_s[search])
+                                print("index", index)
+                            except:
+                                print("index = none")
+                        print("cont", cont)
+                    # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
+                    if cont > 1:
+                        self.pob_cruza[e][i].get_asignaturas().pop(index)
+                        cont += -1
+                        print("borrar")
+        # AGREGANDO DE POB_CRUZA A POB_TOTAL
+        for i in range(len(self.pob_cruza)):
+            self.pob_cruza[i].set_id(len(self.pob_total))
+            self.pob_muta.append(self.pob_cruza[i])
 
     # FUNCION PARA PROCESO DE MUTA
     def mutates(self):
         print("---------MUTA........")
+        # MUTA DE INDIVIDU0OS
+        pob_muta = self.pob_muta
+        bloq = self.bloque
+
+        for i in range(len(pob_muta)):
+            value = ""
+            for e in range(bloq - 1):
+                value = pob_muta[i][e + 1].get_asignaturas().pop()
+                pob_muta[i][e].get_asignaturas().append(value)
+            # AGREGANDO DE POB MUTA A POB GLOBAL
+            pob_muta[i].set_id(len(self.pob_total))
+            self.pob_total.append(pob_muta[i])
 
     def pruning(self):
         print("-----PODA......")
