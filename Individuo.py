@@ -7,22 +7,22 @@ class Individuo():
         self.bloque = bloque
         self.asignaturas = asignaturas
 
-    def id_get(self):
+    def get_id(self):
         return self.id
 
-    def id_set(self, id):
+    def set_id(self, id):
         self.id = id
 
-    def bloque_get(self):
+    def get_bloque(self):
         return self.bloque
 
-    def bloque_set(self, bloque):
+    def set_bloque(self, bloque):
         self.bloque = bloque
 
-    def get_fitness(self):
+    def fitness_get(self):
         return self.fitness
 
-    def set_fitness(self, fitness):
+    def fitness_set(self, fitness):
         self.fitness = fitness
         
     def get_asignaturas(self):
