@@ -5,7 +5,7 @@ import pandas as pd
 
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
-    num_epoch = 0
+    num_generation = 0
     pob_asig = []
     pob_selec = []
     pob_cruza = []
@@ -48,30 +48,32 @@ class AGS(object):
     
 
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
-    def __init__(self, epoch, pc, po, cu_a, matricula, asignaturas):
+    def __init__(self, generation, pc, po, cu_a, matricula, asignaturas):
         # LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
         self.bloque = None
         self.pob_total.clear()
         # PARARAMETROS DE LA INTERFAZ GRAFICA
-        self.epoch = epoch
+        self.generation = generation
         self.pc = pc
         self.po = po
         self.cu_a = cu_a
         self.matricula = matricula
         self.asignaturas = asignaturas
 
-        # EJECUTA HASTA EL NUMERO DE EPOCAS ASIGNADAS EN epoch
+        # EJECUTA HASTA EL NUMERO DE GENERACIONES ASIGNADAS EN generation
         while True:
             # IMPLEMETANCION DE METODOS AGS
             self.create_init()
+            for i in self.pob_total:
+                print(i.get_lista_asignaturas())
             self.selection()
             self.cross()
             self.mutates()
             self.pruning()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
-            self.num_epoch += 1
-            # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A EPOCH
-            if self.num_epoch == epoch:
+            self.num_generation += 1
+            # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
+            if self.num_generation == generation:
                 # TEST PRINT
                 self.print_test()
                 break
@@ -79,9 +81,11 @@ class AGS(object):
     # FUNCION PARA LA CREACION DE INDIVIDUOS
     def create_init(self):
         print("----------CREACION-------------")
+        iterador = 0
 
         # CLICLO PARA ITERAR Y CREAR LOS INDIVDUOS PRINCIPALES
-        for i in range(self.po):
+        # while iterador < self.po:
+        while iterador < self.po:
             # CARGANDO LOS ATRIBUTOS DE CADA INDIVIDUO
             id = len(self.pob_total)
             self.bloque = self.cua_lim - self.cu_a
@@ -94,27 +98,33 @@ class AGS(object):
 
             # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
             asignaturas.append(asignaturas_s)
-            for j in range(1, self.bloque):
+            
+            # Lista de sub-listas
+            sublistas_asignaturas = []
+            while len(asignaturas[0]) > 0 and len(sublistas_asignaturas) < self.bloque:
+                # Longitud de la sub-lista actual
+                sublista_len = min(len(asignaturas[0]), random.randint(3,7))
+                # Seleccionar una muestra aleatoria de la lista original
+                sublista = random.sample(asignaturas[0], sublista_len)
+                # Eliminar los elementos seleccionados de la lista original
+                asignaturas[0] = [elem for elem in asignaturas[0] if elem not in sublista]
+                # Agregar la sub-lista a la lista de sub-listas
+                sublistas_asignaturas.append(sublista)
 
-                # CREA UNA FILA NUEVA EN LA MATRIZ DE ARREGLOS
-                asignaturas.append([])
-
-                for r in range(int(len(asignaturas_s) / self.bloque)):
-
-                    # SE AGREGA A LA UNEVA FILA PARA RELLENAR ASIGNATURAS
-                    asignaturas[j].append(asignaturas[j - 1].pop())
-            print(asignaturas)
+            print(sublistas_asignaturas)
 
             # CREACION DE INDIVODUO
-            individuo = Individuo(id, self.bloque, asignaturas_s)
+            individuo = Individuo(id, self.bloque, sublistas_asignaturas, asignaturas_s)
             
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
             self.pob_total.append(individuo)
             
             #VERIFICAR QUE EL INDIVIDUO SEA VALIDO
-            verificar = self.validacion(individuo, asignaturas)
+            verificar = self.validacion(individuo)
             if not verificar:
                 self.pob_total.pop()
+                iterador -= 1
+            iterador += 1
 
     # FUNCION PARA SELECCION A LOS INVIDUOS QUE PASARAN A PROCESO DE CRUZA |PC|
     def selection(self):
@@ -230,7 +240,7 @@ class AGS(object):
         print("-------Fitness........")
         # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
         fitness = 0
-        plan_estudios = individuo.get_asignaturas()
+        plan_estudios = individuo.get_lista_asignaturas()
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
         # N° Cuatri y Clave asignatura. p.e:
         # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]
@@ -253,8 +263,8 @@ class AGS(object):
         # ['4LSA','5DS'] = 8.5 <- Combinación más apta
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
-    def validacion(self, individuo, asignaturas):
-        validatiion = self.validar_part_1(self.cu_a, asignaturas, individuo.get_asignaturas())
+    def validacion(self, individuo):
+        validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), individuo.get_asignaturas_cursar())
         return validatiion  
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
