@@ -254,13 +254,11 @@ class AGS(object):
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo, asignaturas):
-        cuatrimestre_cursasado = self.cu_a - 1
-
-        validatiion = self.validar_part_1(cuatrimestre_cursasado, self.cu_a, individuo.get_asignaturas(), asignaturas)
+        validatiion = self.validar_part_1(self.cu_a, asignaturas, individuo.get_asignaturas())
         return validatiion  
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
-    def validar_part_1(self, cuatrimestre_anterior, cuatrimestre_cursar, lista_asignaturas, materias_cursar):
+    def validar_part_1(self, cuatrimestre_cursar, lista_asignaturas, materias_cursar):
         materias_validas = []
         for cuatri in lista_asignaturas:
             print("Cuatrimestre a cursar:\t\t", cuatrimestre_cursar)
@@ -269,8 +267,6 @@ class AGS(object):
                 if mat not in materias_cursar:
                     return False
                 num_cuatri_mate = mat[0]
-                if int(num_cuatri_mate) < cuatrimestre_anterior:
-                    return False
                 periodos_actuales = self.cuatrimestres[cuatrimestre_cursar]
                 if (num_cuatri_mate in self.periodos[periodos_actuales[0]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[0]]) or (num_cuatri_mate in self.periodos[periodos_actuales[1]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[1]]):
                     return False
