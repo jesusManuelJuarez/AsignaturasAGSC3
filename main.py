@@ -17,7 +17,7 @@ if __name__ == '__main__':
     form = ts.form(key="my_form")
     po = form.text_input("Ingrese PO")
     pc = 0.5
-    epoch = form.text_input("Ingrese EPOCA")
+    generation = form.text_input("Ingrese GENERACIÓN")
     cu_a = form.text_input("Ingrese CUATRIMESTRE ACTUAL")
     matricula = form.text_input("Ingrese MATRICULA")
     asignaturas = form.text_input("Ingrese ASIGNATURAS PENDIENTES SEPARADAS POR (,)")
@@ -25,5 +25,5 @@ if __name__ == '__main__':
 
     if submit_button:
         # CREACION DE INDIVIDUO
-        algoritmo_g = AGS(int(epoch), pc, int(po), int(cu_a), int(matricula), asignaturas)
+        algoritmo_g = AGS(int(generation), pc, int(po), int(cu_a), int(matricula), asignaturas)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
