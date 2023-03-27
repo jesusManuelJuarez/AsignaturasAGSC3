@@ -6,6 +6,7 @@ import pandas as pd
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
     num_generation = 0
+    asignaturas_s = []
     pob_asig = []
     pob_selec = []
     pob_cruza = []
@@ -13,6 +14,7 @@ class AGS(object):
     pob_total = []
     univer_mg = []
     cua_lim = 15
+    po = 0
     materias_list = []
     cuatrimestres = {
         1 : [3,1],
@@ -48,24 +50,32 @@ class AGS(object):
     
 
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
-    def __init__(self, generation, pc, po, cu_a, matricula, asignaturas):
+    def __init__(self, generation, pc, pm, cu_a, matricula, asignaturas):
         # LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
         self.bloque = None
         self.pob_total.clear()
         # PARARAMETROS DE LA INTERFAZ GRAFICA
         self.generation = generation
         self.pc = pc
-        self.po = po
+        self.pm = pm
         self.cu_a = cu_a
         self.matricula = matricula
         self.asignaturas = asignaturas
 
         # EJECUTA HASTA EL NUMERO DE GENERACIONES ASIGNADAS EN generation
+        self.create_init()
+        self.ajuste()
         while True:
             # IMPLEMETANCION DE METODOS AGS
-            self.create_init()
+            print("Poblacion inicial: ", self.po)
+            print("Inidivuos:")
             for i in self.pob_total:
-                print(i.get_lista_asignaturas())
+                num_cuatrimestres = 0
+                for cuatri in i.get_lista_asignaturas():
+                    if len(cuatri) > 0:
+                        num_cuatrimestres += 1
+                print(f"{i.get_lista_asignaturas()} #Cuatrimestes: {num_cuatrimestres}")
+                self.fitness(i)
             self.selection()
             self.cross()
             self.mutates()
@@ -82,9 +92,9 @@ class AGS(object):
     def create_init(self):
         print("----------CREACION-------------")
         iterador = 0
-
+        
+        self.po = random.randint(4,self.pm)
         # CLICLO PARA ITERAR Y CREAR LOS INDIVDUOS PRINCIPALES
-        # while iterador < self.po:
         while iterador < self.po:
             # CARGANDO LOS ATRIBUTOS DE CADA INDIVIDUO
             id = len(self.pob_total)
@@ -93,11 +103,11 @@ class AGS(object):
             # CREAR UN ARREGLO DE ASIGNATURAS
             asignaturas = []
             # SEPARACION POR COMA DE UNA CADENA DE ASIGNATURAS
-            asignaturas_s = self.asignaturas.split(",")
-            random.shuffle(asignaturas_s)
+            self.asignaturas_s = self.asignaturas.split(",")
+            random.shuffle(self.asignaturas_s)
 
             # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
-            asignaturas.append(asignaturas_s)
+            asignaturas.append(self.asignaturas_s)
             
             # Lista de sub-listas
             sublistas_asignaturas = []
@@ -111,10 +121,10 @@ class AGS(object):
                 # Agregar la sub-lista a la lista de sub-listas
                 sublistas_asignaturas.append(sublista)
 
-            print(sublistas_asignaturas)
+            # print(sublistas_asignaturas)
 
             # CREACION DE INDIVODUO
-            individuo = Individuo(id, self.bloque, sublistas_asignaturas, asignaturas_s)
+            individuo = Individuo(id, self.bloque, sublistas_asignaturas)
             
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
             self.pob_total.append(individuo)
@@ -125,6 +135,21 @@ class AGS(object):
                 self.pob_total.pop()
                 iterador -= 1
             iterador += 1
+    
+    def ajuste(self):
+        cantidad_max = len(self.pob_total[0].get_lista_asignaturas())
+        for i in self.pob_total:
+            if len(i.get_lista_asignaturas()) > cantidad_max:
+                cantidad_max = len(i.get_lista_asignaturas())
+                
+        for i in self.pob_total:
+            asignatutras_aux = []
+            if len(i.get_lista_asignaturas()) < cantidad_max:
+                cant_faltante = cantidad_max - len(i.get_lista_asignaturas())
+                asignatutras_aux = i.get_lista_asignaturas()
+                for j in range(cant_faltante):
+                    asignatutras_aux.append([])
+                i.set_lista_asignaturas(asignatutras_aux)
 
     # FUNCION PARA SELECCION A LOS INVIDUOS QUE PASARAN A PROCESO DE CRUZA |PC|
     def selection(self):
@@ -148,23 +173,29 @@ class AGS(object):
         pob_selec = self.pob_selec
 
         asignaturas_s = self.materias_list
-        bloque = self.bloque
+        bloque = len(self.pob_selec[0].get_lista_asignaturas())
 
         # INDIVIDUOS ORIGINALES CRUZADOS
+        print(len(self.pob_selec))
         print("-----ANTES DE CRUZA--------")
         for g in range(len(pob_selec)):
-            print(pob_selec[g])
+            print(pob_selec[g].get_lista_asignaturas())
 
         print("-------------")
         # SE ITERA EN LA POBLACION SELECCIONADA A CRUZA
         for i in range(len(pob_selec) - 1):
             asig_c = []
+            asig_ind = pob_selec[i].get_lista_asignaturas()
+            asig_ind_af = pob_selec[i+1].get_lista_asignaturas()
             # SE ITERA EN CADA BLOQUE DE LA POB SELECCIONA A CRUZA
             for e in range(bloque):
-                asig_c.append(pob_selec[i][e] + pob_selec[i + 1][e])
+                asig_c.append(asig_ind[e] + asig_ind_af[e])
                 # indiv_d.append(pob_selec[i+1][e] + pob_selec[i][e])
 
             # CREACION DE INDIVODUO
+            print(asig_c)
+            print("linea segun lista")
+            print(list(asig_c))
             individuo = Individuo(id, self.bloque, asig_c)
             self.pob_cruza.append(individuo)
             # pob_cruza.append(indiv_d)
@@ -237,43 +268,56 @@ class AGS(object):
                 self.pob_total.pop(0)
 
     def fitness(self, individuo):
-        print("-------Fitness........")
+        print("-------Fitness---------")
         # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
         fitness = 0
         plan_estudios = individuo.get_lista_asignaturas()
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
         # N° Cuatri y Clave asignatura. p.e:
         # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]
+        aux_cu_a = self.cu_a
+        current_fitness = 100
         for cuatrimestre in plan_estudios:
-            aux_fitness = 0
+            eficiencia = 0
+            nvl_carga = 0
             # recorre cada arreglo de la matriz (cuatrimestre)
             # cuatrimestre = ['5MDD','8IA','8CAS']
-            for asignatruas in cuatrimestre:
-                # recorre cada asignatura del cuatrismtre
-                # p.e. primero '5DD', luego '8IA', etc.
-                num_cuatri = asignatruas[0]
-                aux_fitness += self.cu_a - num_cuatri
-            # una vez terminado de recorrer el cuatri, divide entre el numero de asignaturas del cuatri.
-            aux_fitness = aux_fitness / len(asignatruas)
+            if len(cuatrimestre) > 0:
+                for asignatruas in cuatrimestre:
+                    # recorre cada asignatura del cuatrismtre
+                    # p.e. primero '5DD', luego '8IA', etc.
+                    num_cuatri = asignatruas[0]
+                    if int(num_cuatri) <= aux_cu_a:
+                        eficiencia += (aux_cu_a - int(num_cuatri))
+                    else:
+                        eficiencia += (int(num_cuatri) - aux_cu_a)
+                nvl_carga = eficiencia / len(cuatrimestre)    
+                # una vez terminado de recorrer el cuatri, divide entre el numero de asignaturas del cuatri.
+                aux_fitness = (aux_fitness * len(cuatrimestre)) / aux_cu_a
+                print(aux_fitness)
+            print("-" * 30)
+            aux_cu_a += 1
             # se procede a sumar
+            # current_fitness = (current_fitness - aux_fitness)
             fitness += aux_fitness
         individuo.set_fitness(fitness)
+        print(fitness)
         # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
         # ['5MDD','8IA'] = 6.5
         # ['4LSA','5DS'] = 8.5 <- Combinación más apta
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo):
-        validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), individuo.get_asignaturas_cursar())
+        validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), self.asignaturas_s)
         return validatiion  
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
     def validar_part_1(self, cuatrimestre_cursar, lista_asignaturas, materias_cursar):
         materias_validas = []
         for cuatri in lista_asignaturas:
-            print("Cuatrimestre a cursar:\t\t", cuatrimestre_cursar)
+            # print("Cuatrimestre a cursar:\t\t", cuatrimestre_cursar)
             for mat in cuatri:
-                print("Materia cargada en ese cuatri: ", mat)
+                # print("Materia cargada en ese cuatri: ", mat)
                 if mat not in materias_cursar:
                     return False
                 num_cuatri_mate = mat[0]
@@ -285,7 +329,7 @@ class AGS(object):
                     return False
                 materias_validas.append(mat)
             cuatrimestre_cursar += 1
-            print("-"*50)
+            # print("-"*50)
         return True
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON LA SERIACION Y SE RESPETE LA MISMA
@@ -296,17 +340,17 @@ class AGS(object):
             aux_seriadas = self.seriadas[index].split("-")
         else:
             aux_seriadas.append(self.seriadas[index])
-        print("Materia(s) seriadas: ", aux_seriadas)
+        # print("Materia(s) seriadas: ", aux_seriadas)
         if (len(aux_seriadas) > 1):
             for ser in aux_seriadas:
                 if ser in materias_cursar and ser not in materias_validas:
-                    print(f"{ser} aun debe cursarse")
+                    # print(f"{ser} aun debe cursarse")
                     return False
             return True
         if aux_seriadas[0] == "NAP":
             return True
         if aux_seriadas[0] in materias_cursar and aux_seriadas[0] not in materias_validas:
-            print(f"{aux_seriadas[0]} aun debe cursarse")
+            # print(f"{aux_seriadas[0]} aun debe cursarse")
             return False
         return True
 
