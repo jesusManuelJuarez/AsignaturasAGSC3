@@ -82,12 +82,10 @@ class AGS(object):
     def create_init(self):
         print("----------CREACION-------------")
         iterador = 0
-        sublista_len = random.randint(4, 7) # longitud máxima de cada sublista
 
         # CLICLO PARA ITERAR Y CREAR LOS INDIVDUOS PRINCIPALES
         # while iterador < self.po:
         while iterador < self.po:
-            sublista_len_aux = sublista_len
             # CARGANDO LOS ATRIBUTOS DE CADA INDIVIDUO
             id = len(self.pob_total)
             self.bloque = self.cua_lim - self.cu_a
@@ -100,24 +98,22 @@ class AGS(object):
 
             # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
             asignaturas.append(asignaturas_s)
-            asignaturas_aux = asignaturas_s
-            print(asignaturas_aux)
             
             # Lista de sub-listas
             sublistas_asignaturas = []
-            while len(asignaturas_aux) > 0 and len(sublistas_asignaturas) < self.bloque:
+            while len(asignaturas[0]) > 0 and len(sublistas_asignaturas) < self.bloque:
+                # Longitud de la sub-lista actual
+                sublista_len = min(len(asignaturas[0]), random.randint(4,7))
                 # Seleccionar una muestra aleatoria de la lista original
-                sublista = random.sample(asignaturas_aux, sublista_len_aux)
+                sublista = random.sample(asignaturas[0], sublista_len)
                 # Eliminar los elementos seleccionados de la lista original
-                asignaturas_aux = [elem for elem in asignaturas_aux if elem not in sublista]
+                asignaturas[0] = [elem for elem in asignaturas[0] if elem not in sublista]
                 # Agregar la sub-lista a la lista de sub-listas
                 sublistas_asignaturas.append(sublista)
-                if len(asignaturas_aux) <= sublista_len_aux:
-                    sublista_len_aux = len(asignaturas_aux)
 
             print(sublistas_asignaturas)
 
-            # CREACION DE INDIVIDUO
+            # CREACION DE INDIVODUO
             individuo = Individuo(id, self.bloque, sublistas_asignaturas, asignaturas_s)
             
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
