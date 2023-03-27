@@ -32,9 +32,9 @@ class AGS(object):
     }
         
     periodos = {
-        1 : ["1","2","4","5","7","8","10","13","14"],
-        2 : ["2","3","5","6","8","9","11","12","14"],
-        3 : ["1","3","4","6","7","9","10","12","13"]
+        1 : [1,2,4,5,7,8,10,13,14],
+        2 : [2,3,5,6,8,9,11,12,14],
+        3 : [1,3,4,6,7,9,10,12,13]
     }
 
     # Cargamos el archivo CSV en un DataFrame
@@ -103,7 +103,7 @@ class AGS(object):
             sublistas_asignaturas = []
             while len(asignaturas[0]) > 0 and len(sublistas_asignaturas) < self.bloque:
                 # Longitud de la sub-lista actual
-                sublista_len = min(len(asignaturas[0]), random.randint(3,7))
+                sublista_len = min(len(asignaturas[0]), random.randint(4,7))
                 # Seleccionar una muestra aleatoria de la lista original
                 sublista = random.sample(asignaturas[0], sublista_len)
                 # Eliminar los elementos seleccionados de la lista original
@@ -278,7 +278,7 @@ class AGS(object):
                     return False
                 num_cuatri_mate = mat[0]
                 periodos_actuales = self.cuatrimestres[cuatrimestre_cursar]
-                if (num_cuatri_mate in self.periodos[periodos_actuales[0]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[0]]) or (num_cuatri_mate in self.periodos[periodos_actuales[1]] and str(cuatrimestre_cursar) not in self.periodos[periodos_actuales[1]]):
+                if (num_cuatri_mate in self.periodos[periodos_actuales[0]] and cuatrimestre_cursar not in self.periodos[periodos_actuales[0]]) or (num_cuatri_mate in self.periodos[periodos_actuales[1]] and cuatrimestre_cursa not in self.periodos[periodos_actuales[1]]):
                     return False
                 validate = self.validar_part_2(mat, materias_cursar, materias_validas)
                 if not validate:
