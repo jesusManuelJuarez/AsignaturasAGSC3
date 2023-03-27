@@ -2,11 +2,10 @@ class Individuo():
     fitness = 0
     asignaturas = []
 
-    def __init__(self, id, bloque, lista_asignaturas, asignaturas_cursar):
+    def __init__(self, id, bloque, lista_asignaturas):
         self.id = id
         self.bloque = bloque
         self.lista_asignaturas = lista_asignaturas
-        self.asignaturas_cursar = asignaturas_cursar
 
     def get_id(self):
         return self.id
@@ -26,8 +25,8 @@ class Individuo():
     def set_fitness(self, fitness):
         self.fitness = fitness
         
+    def set_lista_asignaturas(self, lista_asignaturas):
+        self.lista_asignaturas = lista_asignaturas
+        
     def get_lista_asignaturas(self):
         return self.lista_asignaturas
-    
-    def get_asignaturas_cursar(self):
-        return self.asignaturas_cursar
