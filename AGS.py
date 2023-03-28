@@ -1,5 +1,6 @@
 from Individuo import *
 import random
+import sys
 import pandas as pd
 
 
@@ -59,8 +60,12 @@ class AGS(object):
         self.pc = pc
         self.pm = pm
         self.cu_a = cu_a
-        self.matricula = matricula
+        self.matricula = str(matricula)
         self.asignaturas = asignaturas
+        
+        if self.matricula[2] != "1" and self.matricula[2] != "3":
+            print("Matricula invalida: ", self.matricula)
+            sys.exit(1)
 
         # EJECUTA HASTA EL NUMERO DE GENERACIONES ASIGNADAS EN generation
         self.create_init()
@@ -121,7 +126,7 @@ class AGS(object):
                 # Agregar la sub-lista a la lista de sub-listas
                 sublistas_asignaturas.append(sublista)
 
-            # print(sublistas_asignaturas)
+            print(sublistas_asignaturas)
 
             # CREACION DE INDIVODUO
             individuo = Individuo(id, self.bloque, sublistas_asignaturas)
@@ -137,6 +142,7 @@ class AGS(object):
             iterador += 1
     
     def ajuste(self):
+        print(len(self.pob_total))
         cantidad_max = len(self.pob_total[0].get_lista_asignaturas())
         for i in self.pob_total:
             if len(i.get_lista_asignaturas()) > cantidad_max:
@@ -270,15 +276,15 @@ class AGS(object):
     def fitness(self, individuo):
         print("-------Fitness---------")
         # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
-        fitness = 0
         plan_estudios = individuo.get_lista_asignaturas()
+        aux_cu_a = self.cu_a
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
         # N° Cuatri y Clave asignatura. p.e:
         # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]
-        aux_cu_a = self.cu_a
-        current_fitness = 100
+        aptitud_cuatri = []
+        fitness = 0
         for cuatrimestre in plan_estudios:
-            eficiencia = 0
+            peso_mat_cuatri = 0
             nvl_carga = 0
             # recorre cada arreglo de la matriz (cuatrimestre)
             # cuatrimestre = ['5MDD','8IA','8CAS']
@@ -287,19 +293,19 @@ class AGS(object):
                     # recorre cada asignatura del cuatrismtre
                     # p.e. primero '5DD', luego '8IA', etc.
                     num_cuatri = asignatruas[0]
-                    if int(num_cuatri) <= aux_cu_a:
-                        eficiencia += (aux_cu_a - int(num_cuatri))
+                    if int(num_cuatri) < aux_cu_a:
+                        peso_mat_cuatri += (aux_cu_a - int(num_cuatri)) * 2
+                    elif int(num_cuatri) == aux_cu_a:
+                        peso_mat_cuatri += 1
                     else:
-                        eficiencia += (int(num_cuatri) - aux_cu_a)
-                nvl_carga = eficiencia / len(cuatrimestre)    
+                        peso_mat_cuatri += (int(num_cuatri) - aux_cu_a) * 0.5
+                nvl_carga = peso_mat_cuatri * len(cuatrimestre)
                 # una vez terminado de recorrer el cuatri, divide entre el numero de asignaturas del cuatri.
-                aux_fitness = (aux_fitness * len(cuatrimestre)) / aux_cu_a
-                print(aux_fitness)
-            print("-" * 30)
+            aptitud_cuatri.append(nvl_carga)
             aux_cu_a += 1
-            # se procede a sumar
-            # current_fitness = (current_fitness - aux_fitness)
-            fitness += aux_fitness
+        # se procede a sumar
+        for f in range(len(aptitud_cuatri)-1):
+            fitness += (aptitud_cuatri[f] - aptitud_cuatri[f+1])
         individuo.set_fitness(fitness)
         print(fitness)
         # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
@@ -308,21 +314,26 @@ class AGS(object):
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo):
-        validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), self.asignaturas_s)
+        periodo_inicial = self.matricula[2]
+        validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), self.asignaturas_s, periodo_inicial)
         return validatiion  
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON EL CUATRIMESTRE Y EL PERIDO EN QUE SE PLANEAN CURSAR
-    def validar_part_1(self, cuatrimestre_cursar, lista_asignaturas, materias_cursar):
+    def validar_part_1(self, cuatrimestre_cursar, plan_estudio, materias_cursar, periodo_inicial):
         materias_validas = []
-        for cuatri in lista_asignaturas:
+        periodo_aux = 0
+        if periodo_inicial == 3:
+            periodo_aux = 0
+        elif periodo_inicial == 1:
+            periodo_aux = 1
+            
+        for cuatri in plan_estudio:
             # print("Cuatrimestre a cursar:\t\t", cuatrimestre_cursar)
+            periodo_actual = self.cuatrimestres[cuatrimestre_cursar][periodo_aux]
             for mat in cuatri:
                 # print("Materia cargada en ese cuatri: ", mat)
-                if mat not in materias_cursar:
-                    return False
-                num_cuatri_mate = mat[0]
-                periodos_actuales = self.cuatrimestres[cuatrimestre_cursar]
-                if (num_cuatri_mate in self.periodos[periodos_actuales[0]] and cuatrimestre_cursar not in self.periodos[periodos_actuales[0]]) or (num_cuatri_mate in self.periodos[periodos_actuales[1]] and cuatrimestre_cursa not in self.periodos[periodos_actuales[1]]):
+                num_cuatri_mate = int(mat[0])
+                if (periodo_actual not in self.cuatrimestres[num_cuatri_mate]):
                     return False
                 validate = self.validar_part_2(mat, materias_cursar, materias_validas)
                 if not validate:
@@ -335,19 +346,15 @@ class AGS(object):
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON LA SERIACION Y SE RESPETE LA MISMA
     def validar_part_2(self, mat, materias_cursar, materias_validas):
         index = self.materias.index(mat)
-        aux_seriadas = []
-        if (len(self.seriadas[index]) > 4):
-            aux_seriadas = self.seriadas[index].split("-")
-        else:
-            aux_seriadas.append(self.seriadas[index])
+        aux_seriadas = self.seriadas[index].split("-")
         # print("Materia(s) seriadas: ", aux_seriadas)
         if (len(aux_seriadas) > 1):
-            for ser in aux_seriadas:
-                if ser in materias_cursar and ser not in materias_validas:
-                    # print(f"{ser} aun debe cursarse")
+            for seriada in aux_seriadas:
+                if seriada in materias_cursar and seriada not in materias_validas:
+                    # print(f"{seriada} aun debe cursarse")
                     return False
             return True
-        if aux_seriadas[0] == "NAP":
+        if aux_seriadas[0] == "NSD":
             return True
         if aux_seriadas[0] in materias_cursar and aux_seriadas[0] not in materias_validas:
             # print(f"{aux_seriadas[0]} aun debe cursarse")
