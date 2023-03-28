@@ -126,7 +126,7 @@ class AGS(object):
                 # Agregar la sub-lista a la lista de sub-listas
                 sublistas_asignaturas.append(sublista)
 
-            print(sublistas_asignaturas)
+            # print(sublistas_asignaturas)
 
             # CREACION DE INDIVODUO
             individuo = Individuo(id, self.bloque, sublistas_asignaturas)
@@ -305,7 +305,8 @@ class AGS(object):
             aux_cu_a += 1
         # se procede a sumar
         for f in range(len(aptitud_cuatri)-1):
-            fitness += (aptitud_cuatri[f] - aptitud_cuatri[f+1])
+            if (aptitud_cuatri[f+1] != 0):
+                fitness += (aptitud_cuatri[f] - aptitud_cuatri[f+1])
         individuo.set_fitness(fitness)
         print(fitness)
         # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
