@@ -2,7 +2,7 @@ from Individuo import *
 import random
 import sys
 import pandas as pd
-
+import streamlit as st
 
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
@@ -85,6 +85,10 @@ class AGS(object):
             self.cross()
             self.mutates()
             self.pruning()
+
+            # MUESTRA EL MEJOR INDIVUDIO
+            st.write("Trayectoria a seguir:")
+            self.view_table()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_generation += 1
             # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
@@ -374,3 +378,18 @@ class AGS(object):
             print("ID:", self.pob_total[i].id)
             print("BLOQUE:", self.pob_total[i].bloque)
             print("ASIGNATURAS", self.pob_total[i].asignaturas)
+
+    def view_table(self):
+        indiv_m = self.pob_total[len(self.pob_total)-1]
+        asig_ind = indiv_m.get_lista_asignaturas()
+        lim_cu = len(asig_ind) + self.cu_a
+
+        print("MUESTRA TABLA GRAFICAMENTE")
+        df = pd.DataFrame(
+            asig_ind,
+            columns = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
+        # IMPRIME LA TABLA
+        st.table(df)
+
+    def view_grafica(self):
+        print("MUESTRA LA GRAFICA VISUALMENTE")
