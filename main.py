@@ -11,14 +11,14 @@ from AGS import *
 if __name__ == '__main__':
     print("EJECUCIÓN DE UN MAIN")
 
-    ts.write("AGS - PLANIFICADOR DE MATERIAS POR RESAGO")
+    ts.write("AGS - PLANIFICADOR DE MATERIAS POR REZAGO")
 
     # CREACION DE FORMULARIO EN STREAMLIT
     form = ts.form(key="my_form")
-    po = form.text_input("Ingrese PO")
+    po = form.text_input("Ingrese MÁXIMA")
     pc = 0.5
     generation = form.text_input("Ingrese GENERACIÓN")
-    cu_a = form.text_input("Ingrese CUATRIMESTRE ACTUAL")
+    cu_a = form.text_input("Ingrese CUATRIMESTRE A CURSAR")
     matricula = form.text_input("Ingrese MATRICULA")
     asignaturas = form.text_input("Ingrese ASIGNATURAS PENDIENTES SEPARADAS POR (,)")
     submit_button = form.form_submit_button(label="Ejecutar")

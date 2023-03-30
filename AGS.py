@@ -3,6 +3,7 @@ import random
 import sys
 import pandas as pd
 import streamlit as st
+import itertools
 
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
@@ -16,6 +17,10 @@ class AGS(object):
     univer_mg = []
     cua_lim = 15
     po = 0
+    pm_i = 0.4
+    pm_c = 0.5
+    pm_a = 0.4
+    pm_m = 0.35
     materias_list = []
     cuatrimestres = {
         1 : [3,1],
@@ -73,16 +78,15 @@ class AGS(object):
         while True:
             # IMPLEMETANCION DE METODOS AGS
             print("Poblacion inicial: ", self.po)
+            print("Poblacion total: ", len(self.pob_total))
             print("Inidivuos:")
             for i in self.pob_total:
-                num_cuatrimestres = 0
-                for cuatri in i.get_lista_asignaturas():
-                    if len(cuatri) > 0:
-                        num_cuatrimestres += 1
-                print(f"{i.get_lista_asignaturas()} #Cuatrimestes: {num_cuatrimestres}")
+                num_cuatrimestres = len(i.get_lista_asignaturas())
+                print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
                 self.fitness(i)
             self.selection()
             self.cross()
+            print("soy materias_list", self.materias_list)
             self.mutates()
             self.pruning()
 
@@ -100,40 +104,30 @@ class AGS(object):
     # FUNCION PARA LA CREACION DE INDIVIDUOS
     def create_init(self):
         print("----------CREACION-------------")
-        iterador = 0
         
+        verificar = False
+        while not verificar:
+            individuo_0 = self.individuo_init()
+            verificar = self.validacion(individuo_0)
+        print("I0:", individuo_0.get_lista_asignaturas())
+        
+        iterador = 0
         self.po = random.randint(4,self.pm)
+        
+        print("-------Creando a los individuos-------")
         # CLICLO PARA ITERAR Y CREAR LOS INDIVDUOS PRINCIPALES
         while iterador < self.po:
             # CARGANDO LOS ATRIBUTOS DE CADA INDIVIDUO
-            id = len(self.pob_total)
-            self.bloque = self.cua_lim - self.cu_a
-
-            # CREAR UN ARREGLO DE ASIGNATURAS
-            asignaturas = []
-            # SEPARACION POR COMA DE UNA CADENA DE ASIGNATURAS
-            self.asignaturas_s = self.asignaturas.split(",")
-            random.shuffle(self.asignaturas_s)
-
-            # SE AGREGA LA LISTA DE STRING Y SE CONVIERTE EN ARREGLO
-            asignaturas.append(self.asignaturas_s)
+            id_i = len(self.pob_total)
             
-            # Lista de sub-listas
-            sublistas_asignaturas = []
-            while len(asignaturas[0]) > 0 and len(sublistas_asignaturas) < self.bloque:
-                # Longitud de la sub-lista actual
-                sublista_len = min(len(asignaturas[0]), random.randint(4,7))
-                # Seleccionar una muestra aleatoria de la lista original
-                sublista = random.sample(asignaturas[0], sublista_len)
-                # Eliminar los elementos seleccionados de la lista original
-                asignaturas[0] = [elem for elem in asignaturas[0] if elem not in sublista]
-                # Agregar la sub-lista a la lista de sub-listas
-                sublistas_asignaturas.append(sublista)
-
-            # print(sublistas_asignaturas)
-
-            # CREACION DE INDIVODUO
-            individuo = Individuo(id, self.bloque, sublistas_asignaturas)
+            individuo_0 = self.individuo_init()
+            lista_asignaturas_original = individuo_0.get_lista_asignaturas()
+                
+            # CREAR UN ARREGLO DE ASIGNATURAS MUTADO DEL INDIVIDUO 0
+            sublistas_asignaturas = self.mutates_function(lista_asignaturas_original)
+            
+            # CREACION DE INDIVIDUO
+            individuo = Individuo(id_i, self.bloque, sublistas_asignaturas)
             
             # AGREGAR A POB_TOTAL QUE CONTIENE A LA POB. DE INDIVIDUOS
             self.pob_total.append(individuo)
@@ -143,10 +137,54 @@ class AGS(object):
             if not verificar:
                 self.pob_total.pop()
                 iterador -= 1
-            iterador += 1
-    
+            iterador += 1      
+
+    def individuo_init(self):
+        self.asignaturas_s = sorted(self.asignaturas.split(","))
+        self.bloque = self.cua_lim - self.cu_a
+        
+        aux_1, aux_2, aumento = len(self.asignaturas_s) / 7, round(len(self.asignaturas_s) / 7), 0
+        if ((aux_1 - (aux_2-1)) > 1.1):
+            aumento = 1
+        min_divisiones = (aux_2 + aumento) # ejemplo, se puede ajustar a cualquier número
+        max_divisiones = self.bloque
+        # generar un número aleatorio de divisiones
+        cantidad_cuatrimestres = random.randint(min_divisiones, max_divisiones)
+        materia_cuatri = 0
+
+        # dividir la lista original en N cantidad de cuatrimestres
+        sublists = []
+        start = 0
+        for i in range(cantidad_cuatrimestres):
+            if cantidad_cuatrimestres == min_divisiones:
+                materia_cuatri = 7
+            elif i == 0:
+                materia_cuatri = random.randint(3, 7)
+            elif (div_restantes == min_aux):
+                materia_cuatri = 7
+            else:
+                materia_cuatri = random.randint(3, 7)
+                
+            materias_iniciales = len(self.asignaturas_s) - len(list(itertools.chain.from_iterable(sublists)))
+            
+            if materias_iniciales == 0:
+                break
+            end = start + materia_cuatri
+            if end > len(self.asignaturas_s):
+                end = len(self.asignaturas_s)
+            sublists.append(self.asignaturas_s[start:end])
+            start = end
+            
+            materias_restantes = len(self.asignaturas_s) - len(list(itertools.chain.from_iterable(sublists)))
+            div_restantes = cantidad_cuatrimestres - (i + 1)
+            aux_1, aux_2, aumento = materias_restantes / 7, round(materias_restantes / 7), 0
+            if ((aux_1 - (aux_2-1)) > 1.1):
+                aumento = 1
+            min_aux = (aux_2 + aumento)
+        indiv_init = Individuo(-1, self.bloque, sublists)
+        return indiv_init
+
     def ajuste(self):
-        print(len(self.pob_total))
         cantidad_max = len(self.pob_total[0].get_lista_asignaturas())
         for i in self.pob_total:
             if len(i.get_lista_asignaturas()) > cantidad_max:
@@ -157,7 +195,7 @@ class AGS(object):
             if len(i.get_lista_asignaturas()) < cantidad_max:
                 cant_faltante = cantidad_max - len(i.get_lista_asignaturas())
                 asignatutras_aux = i.get_lista_asignaturas()
-                for j in range(cant_faltante):
+                for _ in range(cant_faltante):
                     asignatutras_aux.append([])
                 i.set_lista_asignaturas(asignatutras_aux)
 
@@ -279,12 +317,11 @@ class AGS(object):
 
     def fitness(self, individuo):
         print("-------Fitness---------")
-        # Sumatoria de cuatrimestre actual - cuatrimestre de la materia rezagada, entre la cantidad de materias rezagadas.
         plan_estudios = individuo.get_lista_asignaturas()
         aux_cu_a = self.cu_a
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
         # N° Cuatri y Clave asignatura. p.e:
-        # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]
+        # lista_asignaturas = [['5MDD','8IA','8CAS'],['2SAD,'5MTR'],[etc],etc]]
         aptitud_cuatri = []
         fitness = 0
         for cuatrimestre in plan_estudios:
@@ -296,6 +333,7 @@ class AGS(object):
                 for asignatruas in cuatrimestre:
                     # recorre cada asignatura del cuatrismtre
                     # p.e. primero '5DD', luego '8IA', etc.
+                    #calcula el peso de las materias de acuerdo a su estatus (rezagada, oridinaria, adelantada)
                     num_cuatri = asignatruas[0]
                     if int(num_cuatri) < aux_cu_a:
                         peso_mat_cuatri += (aux_cu_a - int(num_cuatri)) * 2
@@ -303,8 +341,9 @@ class AGS(object):
                         peso_mat_cuatri += 1
                     else:
                         peso_mat_cuatri += (int(num_cuatri) - aux_cu_a) * 0.5
+                # una vez terminado de recorrer el cuatri, multiplica el peso total de las asignaturas en el cuatri
+                # por el numero de asignaturas del cuatri.
                 nvl_carga = peso_mat_cuatri * len(cuatrimestre)
-                # una vez terminado de recorrer el cuatri, divide entre el numero de asignaturas del cuatri.
             aptitud_cuatri.append(nvl_carga)
             aux_cu_a += 1
         # se procede a sumar
@@ -365,6 +404,97 @@ class AGS(object):
             # print(f"{aux_seriadas[0]} aun debe cursarse")
             return False
         return True
+    
+    def mutates_function(self, plan_academico):
+        for cuatrimestre in plan_academico:
+            cuatrimestre_indice = plan_academico.index(cuatrimestre)
+            prom_c = random.random()
+            if prom_c < self.pm_c:
+                # print(f"----------Mutando cuatrimestre {cuatrimestre_indice+1}----------")
+                for asignatura in cuatrimestre:
+                    prom_a = random.random()
+                    if prom_a < self.pm_a:
+                        # print(f"----------Mutando asignatura {asignatura}----------")
+                        pro_m = random.random()
+                        if (pro_m < self.pm_m or cuatrimestre_indice == 0):
+                            if cuatrimestre_indice != (len(plan_academico)-1):
+                                index_global = self.materias.index(asignatura)
+                                aux_seriadas = self.seriadas[index_global].split("-")
+                                index_local_1 = cuatrimestre.index(asignatura)
+                                if (aux_seriadas[0] != "NSD"):
+                                    for asi_seriada in aux_seriadas:
+                                        success = False
+                                        able_to_insert = -1
+                                        for cuatri in range(len(plan_academico)):
+                                            if cuatri >= cuatrimestre_indice and asi_seriada in plan_academico[cuatri]:
+                                                able_to_insert = cuatri
+                                                success = True
+                                        if success:
+                                            if able_to_insert != cuatrimestre_indice:
+                                                index_mat_sacar = plan_academico[able_to_insert].index(asi_seriada)
+                                                cuatrimestre.append(plan_academico[able_to_insert][index_mat_sacar])
+                                                plan_academico[able_to_insert].append(asignatura)
+                                                cuatrimestre.pop(index_local_1)
+                                                plan_academico[able_to_insert].pop(index_mat_sacar)
+                                            else:
+                                                max_index = len(plan_academico[cuatrimestre_indice + 1]) - 1
+                                                index_mat_sacar = random.randint(0, max_index)
+                                                plan_academico[cuatrimestre_indice + 1].append(asignatura)
+                                                cuatrimestre.append(plan_academico[cuatrimestre_indice + 1][index_mat_sacar])
+                                                cuatrimestre.pop(index_local_1)
+                                                plan_academico[cuatrimestre_indice + 1].pop(index_mat_sacar)
+                                        else:
+                                            random_cuatri = random.randint((cuatrimestre_indice + 1), (len(plan_academico) - 1))
+                                            max_index = len(plan_academico[random_cuatri]) - 1
+                                            index_mat_sacar = random.randint(0, max_index)
+                                            plan_academico[random_cuatri].append(asignatura)
+                                            cuatrimestre.append(plan_academico[random_cuatri][index_mat_sacar])
+                                            cuatrimestre.pop(index_local_1)
+                                            plan_academico[random_cuatri].pop(index_mat_sacar)
+                                else:
+                                    for cuatri in range(0, len(plan_academico)):
+                                        if cuatri > cuatrimestre_indice:
+                                            success = False
+                                            for mat in plan_academico[cuatri]:
+                                                index_post = self.materias.index(mat)
+                                                seriadas_post = self.seriadas[index_post].split("-")
+                                                if seriadas_post[0] != "NSD" and not success:
+                                                    for seriada in seriadas_post:
+                                                        if not success:
+                                                            if seriada in cuatrimestre:
+                                                                break
+                                                            plan_academico[cuatri].append(asignatura)
+                                                            index_mat_sacar = plan_academico[cuatri].index(mat)
+                                                            cuatrimestre.append(mat)
+                                                            plan_academico[cuatri].pop(index_mat_sacar)                                
+                                                            cuatrimestre.pop(index_local_1)
+                                                            success = True
+                        else:
+                            if cuatrimestre_indice != 0:
+                                index_global = self.materias.index(asignatura)
+                                aux_seriadas = self.seriadas[index_global].split("-")
+                                index_local_1 = cuatrimestre.index(asignatura)
+                                if aux_seriadas[0] !=  "NSD":
+                                    able_to_insert = []
+                                    for cuatri in range(cuatrimestre_indice + 1):
+                                        for seriada in aux_seriadas:   
+                                            if seriada not in plan_academico[cuatri]:
+                                                able_to_insert.append(cuatri)
+                                            else:
+                                                able_to_insert.clear()
+                                    if len(able_to_insert) > 0:
+                                        indice_cua_auxiliar = able_to_insert[0]
+                                        if (len(plan_academico[indice_cua_auxiliar]) == 7):
+                                            max_index = len(plan_academico[indice_cua_auxiliar]) - 1
+                                            index_mat_sacar = random.randint(0, max_index)                                                
+                                            plan_academico[indice_cua_auxiliar].append(asignatura)
+                                            cuatrimestre.append(plan_academico[indice_cua_auxiliar][index_mat_sacar])
+                                            cuatrimestre.pop(index_local_1)
+                                            plan_academico[indice_cua_auxiliar].pop(index_mat_sacar)
+                                        else:
+                                            plan_academico[indice_cua_auxiliar].append(asignatura)                       
+        return plan_academico
+
 
     # CORRECION DE LOS INDIVIDUOS
     def correccion(self):
