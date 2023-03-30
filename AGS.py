@@ -71,11 +71,11 @@ class AGS(object):
         while True:
             # IMPLEMETANCION DE METODOS AGS
             print("Poblacion inicial: ", self.po)
-            print("Inidivuos:")
-            # for i in self.pob_total:
-            #     num_cuatrimestres = len(i.get_lista_asignaturas())
-            #     print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
-            #     self.fitness(i)
+            print("Poblacion Total:", len(self.pob_total))
+            for i in self.pob_total:
+                num_cuatrimestres = len(i.get_lista_asignaturas())
+                print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
+                self.fitness(i)
             self.selection()
             self.cross()
             self.mutates()
@@ -83,7 +83,7 @@ class AGS(object):
 
             # MUESTRA EL MEJOR INDIVUDIO
             st.write("Trayectoria a seguir:")
-            self.view_table()
+            # self.view_table()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_generation += 1
             # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
@@ -100,6 +100,7 @@ class AGS(object):
         while not verificar:
             individuo_0 = self.individuo_init()
             verificar = self.validacion(individuo_0)
+            print(verificar)
         print("I0:", individuo_0.get_lista_asignaturas())
         
         iterador = 0
@@ -305,17 +306,17 @@ class AGS(object):
 
     def pruning(self):
         print("-----PODA......")
-        # Ordena la lista de individuos (pob total) de menor a mayoy segun su valor de aptitud (fitness)
-        self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
-        
         indi_validos = []
         for individuo in self.pob_total:
             validar = self.validacion(individuo)
             if validar:
-                self.indi_validos.append(individuo)
+                indi_validos.append(individuo)
         
         self.pob_total.clear()
         self.pob_total = indi_validos
+        # Ordena la lista de individuos (pob total) de menor a mayoy segun su valor de aptitud (fitness)
+        self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
+        
 
         # Si hay menos de 3 valores, solo elimina 1 para que se puedan seguir cruzando
         if len(self.pob_total) <= 3:
@@ -366,7 +367,7 @@ class AGS(object):
 
     # VALIDA LAS ASIGNATURAS CON RESPECTO AL POB_ASIG
     def validacion(self, individuo):
-        periodo_inicial = self.matricula[2]
+        periodo_inicial = int(self.matricula[2])
         validatiion = self.validar_part_1(self.cu_a, individuo.get_lista_asignaturas(), self.asignaturas_s, periodo_inicial)
         return validatiion  
 
@@ -376,7 +377,7 @@ class AGS(object):
         periodo_aux = 0
         if periodo_inicial == 3:
             periodo_aux = 0
-        else:
+        elif periodo_inicial == 1:
             periodo_aux = 1
             
         for cuatri in plan_estudio:
@@ -453,12 +454,25 @@ class AGS(object):
                                                 plan_academico[cuatrimestre_indice + 1].pop(index_mat_sacar)
                                         else:
                                             random_cuatri = random.randint((cuatrimestre_indice + 1), (len(plan_academico) - 1))
-                                            max_index = len(plan_academico[random_cuatri]) - 1
-                                            index_mat_sacar = random.randint(0, max_index)
-                                            plan_academico[random_cuatri].append(asignatura)
-                                            cuatrimestre.append(plan_academico[random_cuatri][index_mat_sacar])
-                                            cuatrimestre.pop(index_local_1)
-                                            plan_academico[random_cuatri].pop(index_mat_sacar)
+                                            prob_acccion = random.random()
+                                            if prob_acccion > 0.5:
+                                                if (len(cuatrimestre) > 1 and (len(plan_academico[random_cuatri]) == 0 or len(plan_academico[random_cuatri]) < 7)):
+                                                    plan_academico[random_cuatri].append(asignatura)
+                                                    cuatrimestre.pop(index_local_1)                                                
+                                                else:
+                                                    max_index = len(plan_academico[random_cuatri]) - 1
+                                                    index_mat_sacar = random.randint(0, max_index)
+                                                    plan_academico[random_cuatri].append(asignatura)
+                                                    cuatrimestre.append(plan_academico[random_cuatri][index_mat_sacar])
+                                                    cuatrimestre.pop(index_local_1)
+                                                    plan_academico[random_cuatri].pop(index_mat_sacar)
+                                            elif (len(plan_academico[random_cuatri]) > 0):
+                                                max_index = len(plan_academico[random_cuatri]) - 1
+                                                index_mat_sacar = random.randint(0, max_index)
+                                                plan_academico[random_cuatri].append(asignatura)
+                                                cuatrimestre.append(plan_academico[random_cuatri][index_mat_sacar])
+                                                cuatrimestre.pop(index_local_1)
+                                                plan_academico[random_cuatri].pop(index_mat_sacar)
                                 else:
                                     for cuatri in range(0, len(plan_academico)):
                                         if cuatri > cuatrimestre_indice:
@@ -500,7 +514,9 @@ class AGS(object):
                                             cuatrimestre.pop(index_local_1)
                                             plan_academico[indice_cua_auxiliar].pop(index_mat_sacar)
                                         else:
-                                            plan_academico[indice_cua_auxiliar].append(asignatura)                       
+                                            plan_academico[indice_cua_auxiliar].append(asignatura)
+                                            cuatrimestre.pop(index_local_1)
+                                                                   
         return plan_academico
 
 
