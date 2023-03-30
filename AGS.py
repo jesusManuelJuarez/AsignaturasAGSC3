@@ -38,12 +38,6 @@ class AGS(object):
         13 : [3,1],
         14 : [1,2],
     }
-        
-    periodos = {
-        1 : [1,2,4,5,7,8,10,13,14],
-        2 : [2,3,5,6,8,9,11,12,14],
-        3 : [1,3,4,6,7,9,10,12,13]
-    }
 
     # Cargamos el archivo CSV en un DataFrame
     df = pd.read_csv(".\Plan de Estudios.csv")
