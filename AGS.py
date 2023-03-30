@@ -116,7 +116,6 @@ class AGS(object):
                 
             # CREAR UN ARREGLO DE ASIGNATURAS MUTADO DEL INDIVIDUO 0
             sublistas_asignaturas = self.mutates_function(lista_asignaturas_original)
-            
             # CREACION DE INDIVIDUO
             individuo = Individuo(id_i, self.bloque, sublistas_asignaturas)
             
@@ -150,11 +149,11 @@ class AGS(object):
             if cantidad_cuatrimestres == min_divisiones:
                 materia_cuatri = 7
             elif i == 0:
-                materia_cuatri = random.randint(3, 7)
+                materia_cuatri = random.randint(1, 7)
             elif (div_restantes == min_aux):
                 materia_cuatri = 7
             else:
-                materia_cuatri = random.randint(3, 7)
+                materia_cuatri = random.randint(1, 7)
                 
             materias_iniciales = len(self.asignaturas_s) - len(list(itertools.chain.from_iterable(sublists)))
             
@@ -298,6 +297,16 @@ class AGS(object):
         print("-----PODA......")
         # Ordena la lista de individuos (pob total) de menor a mayoy segun su valor de aptitud (fitness)
         self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
+        
+        indi_validos = []
+        for individuo in self.pob_total:
+            validar = self.validacion(individuo)
+            if validar:
+                self.indi_validos.append(individuo)
+        
+        self.pob_total.clear()
+        self.pob_total = indi_validos
+
         # Si hay menos de 3 valores, solo elimina 1 para que se puedan seguir cruzando
         if len(self.pob_total) <= 3:
             self.pob_total.pop(0)
@@ -307,7 +316,6 @@ class AGS(object):
                 self.pob_total.pop(0)
 
     def fitness(self, individuo):
-        print("-------Fitness---------")
         plan_estudios = individuo.get_lista_asignaturas()
         aux_cu_a = self.cu_a
         # La lista de asignaturas debería estar estructurada de la siguiente manera:
@@ -342,7 +350,6 @@ class AGS(object):
             if (aptitud_cuatri[f+1] != 0):
                 fitness += (aptitud_cuatri[f] - aptitud_cuatri[f+1])
         individuo.set_fitness(fitness)
-        print(fitness)
         # Entre más alto el valor de fitness, mejor aptitud, por ejemplo: ;
         # ['5MDD','8IA'] = 6.5
         # ['4LSA','5DS'] = 8.5 <- Combinación más apta
@@ -359,7 +366,7 @@ class AGS(object):
         periodo_aux = 0
         if periodo_inicial == 3:
             periodo_aux = 0
-        elif periodo_inicial == 1:
+        else:
             periodo_aux = 1
             
         for cuatri in plan_estudio:
