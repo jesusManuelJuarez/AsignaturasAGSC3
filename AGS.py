@@ -189,6 +189,7 @@ class AGS(object):
                 for _ in range(cant_faltante):
                     asignatutras_aux.append([])
                 i.set_lista_asignaturas(asignatutras_aux)
+                self.fitness(i)
 
     # FUNCION PARA SELECCION A LOS INVIDUOS QUE PASARAN A PROCESO DE CRUZA |PC|
     def selection(self):
@@ -290,6 +291,8 @@ class AGS(object):
                 lista_asignaturas_original = individuo.get_lista_asignaturas()
                 sublistas_asignaturas = self.mutates_function(lista_asignaturas_original)
                 individuo.set_lista_asignaturas(sublistas_asignaturas)
+                self.fitness(individuo)
+                self.pob_total.append(individuo)
 
     def pruning(self):
         print("-----PODA......")
