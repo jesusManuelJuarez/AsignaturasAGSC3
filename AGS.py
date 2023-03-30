@@ -17,11 +17,10 @@ class AGS(object):
     univer_mg = []
     cua_lim = 15
     po = 0
-    pm_i = 0.4
+    pm_i = 0.6
     pm_c = 0.5
     pm_a = 0.4
     pm_m = 0.35
-    materias_list = []
     cuatrimestres = {
         1 : [3,1],
         2 : [1,2],
@@ -72,15 +71,13 @@ class AGS(object):
         while True:
             # IMPLEMETANCION DE METODOS AGS
             print("Poblacion inicial: ", self.po)
-            print("Poblacion total: ", len(self.pob_total))
             print("Inidivuos:")
-            for i in self.pob_total:
-                num_cuatrimestres = len(i.get_lista_asignaturas())
-                print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
-                self.fitness(i)
+            # for i in self.pob_total:
+            #     num_cuatrimestres = len(i.get_lista_asignaturas())
+            #     print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
+            #     self.fitness(i)
             self.selection()
             self.cross()
-            print("soy materias_list", self.materias_list)
             self.mutates()
             self.pruning()
 
@@ -286,16 +283,13 @@ class AGS(object):
         print("---------MUTA........")
         # MUTA DE INDIVIDU0OS
         pob_muta = self.pob_muta
-        bloq = self.bloque
 
-        for i in range(len(pob_muta)):
-            value = ""
-            for e in range(bloq - 1):
-                value = pob_muta[i][e + 1].get_asignaturas().pop()
-                pob_muta[i][e].get_asignaturas().append(value)
-            # AGREGANDO DE POB MUTA A POB GLOBAL
-            pob_muta[i].set_id(len(self.pob_total))
-            self.pob_total.append(pob_muta[i])
+        for individuo in pob_muta:
+            prob_m_i = random.random()
+            if prob_m_i < self.pm_i:
+                lista_asignaturas_original = individuo.get_lista_asignaturas()
+                sublistas_asignaturas = self.mutates_function(lista_asignaturas_original)
+                individuo.set_lista_asignaturas(sublistas_asignaturas)
 
     def pruning(self):
         print("-----PODA......")
