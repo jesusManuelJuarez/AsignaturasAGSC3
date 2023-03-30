@@ -39,7 +39,7 @@ class AGS(object):
     }
 
     # Cargamos el archivo CSV en un DataFrame
-    df = pd.read_csv(".\Plan de Estudios.csv")
+    df = pd.read_csv("./Plan de Estudios.csv")
 
     # Extraemos la columna "Model" y eliminamos los valores duplicados
     materias = df["Materia"]
@@ -211,7 +211,7 @@ class AGS(object):
         print(".........CRUZA.........")
         pob_selec = self.pob_selec
 
-        asignaturas_s = self.materias_list
+        asignaturas_s = self.materias
         bloque = len(self.pob_selec[0].get_lista_asignaturas())
 
         # INDIVIDUOS ORIGINALES CRUZADOS
@@ -248,35 +248,45 @@ class AGS(object):
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
             for e in range(len(self.pob_cruza)):
                 print("---------------------")
+                asig_ind = pob_selec[e].get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
-                for i in range(len(self.pob_cruza[e].get_asignaturas())):
+                for i in range(len(asig_ind)):
 
                     print("--------------")
                     # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
-                    for o in range(len(self.pob_cruza[e][i].get_asignaturas())):
+                    for o in range(len(asig_ind[i])):
                         # SE BUSCA LA ASIGNATURA
-                        value = asignaturas_s[search] == self.pob_cruza[e][i][o].get_asignaturas()
+                        value = asignaturas_s[search] == asig_ind[i][o]
                         # SI SE ENCUENTRA ENTONCES SE SUMA +1
                         if value:
                             cont += 1
                             # SE OBTIENE EL INDEX DONDE SE ENCONTRO $ SE USA TRY YA QUE SINO ENCUENTRA ENTONCES
                             # CAUSA EXCEPCION
                             try:
-                                index = self.pob_cruza[e][i].get_asignaturas().index(asignaturas_s[search])
+                                index = asig_ind[i].index(asignaturas_s[search])
                                 print("index", index)
                             except:
                                 print("index = none")
                         print("cont", cont)
                     # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
                     if cont > 1:
-                        self.pob_cruza[e][i].get_asignaturas().pop(index)
+                        asig_ind[i].pop(index)
                         cont += -1
                         print("borrar")
+                # SE ACTUALIZA LA POB_CRUZA
+                self.pob_cruza[e].set_lista_asignaturas(asig_ind)
+
         # AGREGANDO DE POB_CRUZA A POB_TOTAL
-        for i in range(len(self.pob_cruza)):
-            self.pob_cruza[i].set_id(len(self.pob_total))
-            self.pob_muta.append(self.pob_cruza[i])
+        for w in range(len(self.pob_cruza)):
+            self.pob_cruza[w].set_id(len(self.pob_total))
+            self.pob_muta.append(self.pob_cruza[w])
+
+        print("-----DESPUES DE CRUZA--------")
+        print("pob en cruza:", len(self.pob_cruza))
+        print("pob en muta:", len(self.pob_muta))
+        for q in range(len(self.pob_muta)):
+            print(self.pob_muta[q].get_lista_asignaturas())
 
     # FUNCION PARA PROCESO DE MUTA
     def mutates(self):
