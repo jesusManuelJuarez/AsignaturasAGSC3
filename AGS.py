@@ -197,7 +197,7 @@ class AGS(object):
         # SELECCION DE INDIVIDUOS USANDO PROBABILIDAD
         list_value = []
         # CLICLO FOR PARA UN RECORRIDO POR LA CANTIDAD DE POB INICIAL.
-        for i in range(self.po):
+        for i in range(len(self.pob_total)):
             # VALOR DE PROBALIDAD ESTABLICIDO PARA CADA INDIVIDUO
             value = random.uniform(0, 0.9)
             list_value.append(value)
