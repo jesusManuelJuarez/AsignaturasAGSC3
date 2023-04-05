@@ -55,6 +55,10 @@ class AGS(object):
         # LIMPIAZA DE POBLACION DE INIVDUOS PARA CADA ITERACIÓN
         self.bloque = None
         self.pob_total.clear()
+        self.pob_selec.clear()
+        self.pob_asig.clear()
+        self.pob_cruza.clear()
+        self.pob_muta.clear()
         # PARARAMETROS DE LA INTERFAZ GRAFICA
         self.generation = generation
         self.pc = pc
@@ -72,16 +76,12 @@ class AGS(object):
         self.ajuste()
         while True:
             # IMPLEMETANCION DE METODOS AGS
-            print("Poblacion inicial: ", self.po)
-            print("Poblacion Total:", len(self.pob_total))
-            for i in self.pob_total:
-                num_cuatrimestres = len(i.get_lista_asignaturas())
-                print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
-                self.fitness(i)
+            self.print_info()
             self.selection()
             self.cross()
             self.mutates()
             self.pruning()
+            self.cleaning_arrays()
 
             # MUESTRA EL MEJOR INDIVUDIO
             st.write("Trayectoria a seguir:")
@@ -106,7 +106,7 @@ class AGS(object):
         print("I0:", individuo_0.get_lista_asignaturas())
         
         iterador = 0
-        self.po = random.randint(4,self.pm)
+        self.po = random.randint(6,self.pm)
         
         print("-------Creando a los individuos-------")
         # CLICLO PARA ITERAR Y CREAR LOS INDIVDUOS PRINCIPALES
@@ -130,7 +130,23 @@ class AGS(object):
             if not verificar:
                 self.pob_total.pop()
                 iterador -= 1
-            iterador += 1      
+            iterador += 1
+    
+    def cleaning_arrays(self):
+        self.pob_selec.clear()
+        self.pob_asig.clear()
+        self.pob_cruza.clear()
+        self.pob_muta.clear()
+    
+    def print_info(self):
+        print("Poblacion inicial: ", self.po)
+        print("Poblacion Total:", len(self.pob_total))
+        for i in self.pob_total:
+            num_cuatrimestres = len(i.get_lista_asignaturas())
+            print(f"{i.get_lista_asignaturas()} #Cuatrimestres: {num_cuatrimestres}")
+            self.fitness(i)
+        for i in range(len(self.pob_total)):
+            print(f"Individuo {i} Fitness: {self.pob_total[i].get_fitness()}")
 
     def individuo_init(self):
         self.asignaturas_s = sorted(self.asignaturas.split(","))
@@ -261,18 +277,18 @@ class AGS(object):
         # CORRECCION DE FALTANTES Y ELEMENTOS REPETIDOS
         # SE ITERA POR CADA ASIGNATURA NO CURSADA
         for search in range(len(asignaturas_s)):
-            print("-------------------------------")
-            print(asignaturas_s[search])
+            # print("-------------------------------")
+            # print(asignaturas_s[search])
             index = None
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
             for e in range(len(self.pob_cruza)):
-                print("---------------------")
+                # print("---------------------")
                 asig_ind = pob_selec[e].get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
                 for i in range(len(asig_ind)):
 
-                    print("--------------")
+                    # print("--------------")
                     # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
                     for o in range(len(asig_ind[i])):
                         # SE BUSCA LA ASIGNATURA
@@ -284,10 +300,10 @@ class AGS(object):
                             # CAUSA EXCEPCION
                             try:
                                 index = asig_ind[i].index(asignaturas_s[search])
-                                print("index", index)
+                                # print("index", index)
                             except:
                                 print("index = none")
-                        print("cont", cont)
+                        # print("cont", cont)
                     # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
                     if cont > 1:
                         asig_ind[i].pop(index)
@@ -317,36 +333,83 @@ class AGS(object):
             #GENERAMOS UN VALOR ALEATORIO ENTRE 0 Y 1
             prob_m_i = random.random()
             #VALIDAMOS SI EL INDIVIDUO MUTARA O NO
-            if prob_m_i < self.pm_i:
+            if prob_m_i <= self.pm_i:
                 #SI MUTA SE OBTENDRA SU PLAN ACADEMICO ACTUAL Y SE MANDARA A LA FUNCION DE MUTACION
                 #PARA OBTENER UN NUEVO PLAN ACADEMICO
+                print("I to Mutate:", individuo.get_lista_asignaturas())
                 plan_academico_original = individuo.get_lista_asignaturas()
                 nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
                 individuo.set_lista_asignaturas(nuevo_plan_academico_original)
+                print("I mutated:", individuo.get_lista_asignaturas())
                 self.fitness(individuo)
                 self.pob_total.append(individuo)
 
     def pruning(self):
         print("-----PODA......")
-        indi_validos = []
+        print(f"Total de individuos antes de la PODA: {len(self.pob_total)}")
+        indiviuos_validos = []
         for individuo in self.pob_total:
             validar = self.validacion(individuo)
             if validar:
-                indi_validos.append(individuo)
+                indiviuos_validos.append(individuo)
         
         self.pob_total.clear()
-        self.pob_total = indi_validos
-        # Ordena la lista de individuos (pob total) de menor a mayoy segun su valor de aptitud (fitness)
+        self.pob_total = indiviuos_validos
+        print(f"Total de individuos despues eliminar invalidos: {len(self.pob_total)}")
+        
+        #  SE BUSCAN INDIVIDUOS REPETIDOS PARA ELIMINARLOS
+        indiviuos_validos = []
+        plans_not_repeated = []
+        
+        for individuo in self.pob_total:
+            if individuo.get_lista_asignaturas() not in plans_not_repeated:
+                indiviuos_validos.append(individuo)
+                plans_not_repeated.append(individuo.get_lista_asignaturas())
+        
+        if len(indiviuos_validos) >= 2:            
+            self.pob_total.clear()
+            self.pob_total = indiviuos_validos
+        else:
+            if len(self.pob_total) >= 2:
+                value = random.randint(2, (len(self.pob_total)))
+                for i in range(value):
+                    random_index = random.randint(0,(len(self.pob_total) - 1))
+                    if i != value:
+                        indiviuos_validos.append(self.pob_total[random_index])
+                    else:
+                        plan_academico_original = self.pob_total[random_index].get_lista_asignaturas()
+                        nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
+                        self.pob_total[random_index].set_lista_asignaturas(nuevo_plan_academico_original)
+                        self.fitness(self.pob_total[random_index])
+                        indiviuos_validos.append(self.pob_total[random_index])
+                        
+                self.pob_total.clear()
+                self.pob_total = indiviuos_validos
+            else:
+                for individuo in self.pob_total:
+                    indiviuos_validos.append(individuo)
+                    plan_academico_original = individuo.get_lista_asignaturas()
+                    nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
+                    individuo.set_lista_asignaturas(nuevo_plan_academico_original)
+                    self.fitness(individuo)
+                    indiviuos_validos.append(individuo)
+                self.pob_total.clear()
+                self.pob_total = indiviuos_validos
+
+        print(f"Total de individuos despues eliminar repetidos: {len(self.pob_total)}")
+        
+        # Ordena la lista de individuos (pob total) de menor a mayor segun su valor de aptitud (fitness)
         self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
         
-
         # Si hay menos de 3 valores, solo elimina 1 para que se puedan seguir cruzando
-        if len(self.pob_total) <= 3:
+        if len(self.pob_total) == 3:
             self.pob_total.pop(0)
         # Sino, elimina a dos
         elif len(self.pob_total) > 3:
             for _ in range(2):
                 self.pob_total.pop(0)
+        
+        print(f"Total de individuos despues de la PODA: {len(self.pob_total)}")
 
     def fitness(self, individuo):
         plan_estudios = individuo.get_lista_asignaturas()
@@ -441,14 +504,14 @@ class AGS(object):
             cuatrimestre_indice = plan_academico.index(cuatrimestre)
             prom_c = random.random()
             #VALIDAMOS SI EL CUATRIMESTRE MUTARA O NO
-            if prom_c < self.pm_c:
+            if prom_c <= self.pm_c:
                 # print(f"----------Mutando cuatrimestre {cuatrimestre_indice+1}----------")
                 #SE RECORREN TODAS LA ASIGNATURAS DENTRO DEL CUATRIMESTRE
                 for asignatura in cuatrimestre:
                     #SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
                     prom_a = random.random()
                     #SE VALIDA SI LA ASIGNATURA MUTARA O NO
-                    if prom_a < self.pm_a:
+                    if prom_a <= self.pm_a:
                         # print(f"----------Mutando asignatura {asignatura}----------")
                         # SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
                         pro_m = random.random()
@@ -463,7 +526,7 @@ class AGS(object):
                         asignaturas_seriadas_later = self.seracion_later[index_mat_general].split("-")
                         move_made = False
                         # SI ES EL PRIMER CUATRIMESTRE SOLO PUEDE IR HACIA ADELANTE
-                        if (pro_m > self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
+                        if (pro_m >= self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
                             if asignaturas_seriadas_later[0] != "NSD":
                                 # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
                                 # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA ANTERIOR)
