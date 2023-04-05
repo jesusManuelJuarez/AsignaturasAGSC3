@@ -207,17 +207,24 @@ class AGS(object):
     def selection(self):
         print("---------INDIVIDUOS SELECCIONADOS-------")
         # SELECCION DE INDIVIDUOS USANDO PROBABILIDAD
-        list_value = []
+        # list_value = []
+        list_index_repeated = []
         # CLICLO FOR PARA UN RECORRIDO POR LA CANTIDAD DE POB INICIAL.
-        for i in range(len(self.pob_total)):
-            # VALOR DE PROBALIDAD ESTABLICIDO PARA CADA INDIVIDUO
-            value = random.uniform(0, 0.9)
-            list_value.append(value)
+        while True:
+            for i in range(len(self.pob_total)):
+                # VALOR DE PROBALIDAD ESTABLICIDO PARA CADA INDIVIDUO
+                value = random.uniform(0, 0.9)
+                # list_value.append(value)
 
-            # SI CUMPLE CON LA PROBALIDAD DE CRUZA ENTONCES AGREGA EL INDIVIDUO
-            if list_value[i] <= self.pc:
-                indv = self.pob_total[i]
-                self.pob_selec.append(indv)
+                # SI CUMPLE CON LA PROBALIDAD DE CRUZA ENTONCES AGREGA EL INDIVIDUO
+                if value <= self.pc:
+                    if i not in list_index_repeated:
+                        indv = self.pob_total[i]
+                        self.pob_selec.append(indv)
+                        list_index_repeated.append(i)
+
+            if len(self.pob_selec) % 2 == 0:
+                break
 
     # FUNCION PARA LA CRUZA
     def cross(self):
