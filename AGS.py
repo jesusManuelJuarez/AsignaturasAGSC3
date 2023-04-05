@@ -43,8 +43,8 @@ class AGS(object):
 
     # Extraemos la columna "Model" y eliminamos los valores duplicados
     materias = df["MATERIA"]
-    seriacionE = df["SERIACIONB"]
-    seriacionL = df["SERIACIONF"]
+    seriacionE = df["SERIACIONE"]
+    seriacionL = df["SERIACIONL"]
     materias = list(materias)
     seracion_earlier = list(seriacionE)
     seracion_later = list(seriacionL)
@@ -81,6 +81,7 @@ class AGS(object):
             self.selection()
             self.cross()
             self.mutates()
+            self.ajuste()
             self.pruning()
 
             # MUESTRA EL MEJOR INDIVUDIO
