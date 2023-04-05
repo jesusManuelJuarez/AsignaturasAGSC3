@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # CREACION DE FORMULARIO EN STREAMLIT
     form = ts.form(key="my_form")
-    po = form.text_input("Ingrese MÁXIMA")
+    po = form.text_input("Ingrese POBLACIÓN MÁXIMA (min: 6)")
     pc = 0.5
     generation = form.text_input("Ingrese GENERACIÓN")
     cu_a = form.text_input("Ingrese CUATRIMESTRE A CURSAR")
@@ -23,7 +23,8 @@ if __name__ == '__main__':
     asignaturas = form.text_input("Ingrese ASIGNATURAS PENDIENTES SEPARADAS POR (,)")
     submit_button = form.form_submit_button(label="Ejecutar")
 
-    if submit_button:
+    if submit_button and int(po) > 6:
         # CREACION DE INDIVIDUO
         algoritmo_g = AGS(int(generation), pc, int(po), int(cu_a), int(matricula), asignaturas)
+        
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
