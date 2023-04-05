@@ -81,7 +81,6 @@ class AGS(object):
             self.selection()
             self.cross()
             self.mutates()
-            self.ajuste()
             self.pruning()
 
             # MUESTRA EL MEJOR INDIVUDIO
