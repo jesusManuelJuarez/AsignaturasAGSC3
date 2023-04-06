@@ -15,11 +15,12 @@ class AGS(object):
     pob_muta = []
     pob_total = []
     univer_mg = []
+    pob_children = []
     cua_lim = 15
     po = 0
     pm_i = 0.6
     pm_c = 0.5
-    pm_a = 0.4
+    pm_a = 0.5
     pm_m = 0.35
     cuatrimestres = {
         1 : [3,1],
@@ -92,7 +93,10 @@ class AGS(object):
             if self.num_generation == generation:
                 # TEST PRINT
                 self.print_test()
+                
                 break
+        
+        print("FINALIZO")
 
     # FUNCION PARA LA CREACION DE INDIVIDUOS
     def create_init(self):
@@ -133,12 +137,15 @@ class AGS(object):
             iterador += 1
     
     def cleaning_arrays(self):
-        self.pob_selec.clear()
-        self.pob_asig.clear()
-        self.pob_cruza.clear()
-        self.pob_muta.clear()
+        self.pob_selec = []
+        self.pob_asig = []
+        self.pob_cruza = []
+        self.pob_muta = []
+        self.pob_children = []
     
     def print_info(self):
+        print("_" * 50)
+        print(f"GENERACION: {self.num_generation}")
         print("Poblacion inicial: ", self.po)
         print("Poblacion Total:", len(self.pob_total))
         for i in self.pob_total:
@@ -233,11 +240,13 @@ class AGS(object):
                         self.pob_selec.append(indv)
                         list_index_repeated.append(i)
 
-            if len(self.pob_selec) % 2 == 0:
+            if len(self.pob_selec) % 2 == 0 and len(self.pob_selec) != 0:
                 break
             if len(self.pob_selec) == len(self.pob_total):
                 list_index_repeated = []
                 self.pob_selec = []
+        for individuo in self.pob_selec:
+            print(individuo.get_lista_asignaturas())
 
     # FUNCION PARA LA CRUZA
     def cross(self):
@@ -340,64 +349,70 @@ class AGS(object):
                 individuo.set_lista_asignaturas(nuevo_plan_academico_original)
                 print("I mutated:", individuo.get_lista_asignaturas())
                 self.fitness(individuo)
-                self.pob_total.append(individuo)
+                self.pob_children.append(individuo)
+            else:
+                self.fitness(individuo)
+                self.pob_children.append(individuo)
 
     def pruning(self):
         print("-----PODA......")
-        print(f"Total de individuos antes de la PODA: {len(self.pob_total)}")
+        print(f"Total de individuos antes de la PODA: {len(self.pob_total)+len(self.pob_children)}")
         indiviuos_validos = []
-        for individuo in self.pob_total:
+        for individuo in self.pob_children:
             validar = self.validacion(individuo)
             if validar:
                 indiviuos_validos.append(individuo)
-        
-        self.pob_total.clear()
-        self.pob_total = indiviuos_validos
+                
+        for child in indiviuos_validos:
+            self.pob_total.append(child)
         print(f"Total de individuos despues eliminar invalidos: {len(self.pob_total)}")
         
         #  SE BUSCAN INDIVIDUOS REPETIDOS PARA ELIMINARLOS
-        indiviuos_validos = []
-        plans_not_repeated = []
+        # indiviuos_validos = []
+        # plans_not_repeated = []
         
-        for individuo in self.pob_total:
-            if individuo.get_lista_asignaturas() not in plans_not_repeated:
-                indiviuos_validos.append(individuo)
-                plans_not_repeated.append(individuo.get_lista_asignaturas())
+        # for individuo in self.pob_total:
+        #     if individuo.get_lista_asignaturas() not in plans_not_repeated:
+        #         indiviuos_validos.append(individuo)
+        #         plans_not_repeated.append(individuo.get_lista_asignaturas())
         
-        if len(indiviuos_validos) >= 2:            
-            self.pob_total.clear()
-            self.pob_total = indiviuos_validos
-        else:
-            if len(self.pob_total) >= 2:
-                value = random.randint(2, (len(self.pob_total)))
-                for i in range(value):
-                    random_index = random.randint(0,(len(self.pob_total) - 1))
-                    if i != value:
-                        indiviuos_validos.append(self.pob_total[random_index])
-                    else:
-                        plan_academico_original = self.pob_total[random_index].get_lista_asignaturas()
-                        nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
-                        self.pob_total[random_index].set_lista_asignaturas(nuevo_plan_academico_original)
-                        self.fitness(self.pob_total[random_index])
-                        indiviuos_validos.append(self.pob_total[random_index])
-                        
-                self.pob_total.clear()
-                self.pob_total = indiviuos_validos
-            else:
-                for individuo in self.pob_total:
-                    indiviuos_validos.append(individuo)
-                    plan_academico_original = individuo.get_lista_asignaturas()
-                    nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
-                    individuo.set_lista_asignaturas(nuevo_plan_academico_original)
-                    self.fitness(individuo)
-                    indiviuos_validos.append(individuo)
-                self.pob_total.clear()
-                self.pob_total = indiviuos_validos
+        # if len(indiviuos_validos) >= 2:          
+        #     self.pob_total.clear()
+        #     self.pob_total = indiviuos_validos
+        # else:        
+        #     if len(self.pob_total) >= 2:
+        #         value = random.randint(2, (len(self.pob_total)))
+        #         for i in range(value):
+        #             random_index = random.randint(0,(len(self.pob_total) - 1))
+        #             if i != value:
+        #                 indiviuos_validos.append(self.pob_total[random_index])
+        #             else:
+        #                 plan_academico_original = self.pob_total[random_index].get_lista_asignaturas()
+        #                 nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
+        #                 self.pob_total[random_index].set_lista_asignaturas(nuevo_plan_academico_original)
+        #                 self.fitness(self.pob_total[random_index])
+        #                 indiviuos_validos.append(self.pob_total[random_index])
+        #         self.pob_total = []
+        #         self.pob_total = indiviuos_validos
+        #     else:
+        #         for individuo in self.pob_total:
+        #             indiviuos_validos.append(individuo)
+        #             plan_academico_original = individuo.get_lista_asignaturas()
+        #             nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
+        #             individuo.set_lista_asignaturas(nuevo_plan_academico_original)
+        #             self.fitness(individuo)
+        #             indiviuos_validos.append(individuo)
+        #         self.pob_total.clear()
+        #         self.pob_total = indiviuos_validos
 
-        print(f"Total de individuos despues eliminar repetidos: {len(self.pob_total)}")
+        # print(f"Total de individuos despues eliminar repetidos: {len(self.pob_total)}")
         
         # Ordena la lista de individuos (pob total) de menor a mayor segun su valor de aptitud (fitness)
         self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
+
+        if len(self.pob_total) >= self.pm:
+            while len(self.pob_total) > self.pm:
+                 self.pob_total.pop(0)
         
         # Si hay menos de 3 valores, solo elimina 1 para que se puedan seguir cruzando
         if len(self.pob_total) == 3:
@@ -406,6 +421,7 @@ class AGS(object):
         elif len(self.pob_total) > 3:
             for _ in range(2):
                 self.pob_total.pop(0)
+        
         
         print(f"Total de individuos despues de la PODA: {len(self.pob_total)}")
 
@@ -608,7 +624,7 @@ class AGS(object):
                                                     # EN ESTE PLAN ACADEMICO AUXILIAR
                                                     aux_plan_academico = plan_academico.copy()
                                                     # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
-                                                    index_mat_to_swap = plan_academico[cuatri].index(mat)
+                                                    index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
                                                     aux_plan_academico[cuatrimestre_indice].append(mat)
                                                     aux_plan_academico[cuatri].append(asignatura)
                                                     aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
@@ -708,7 +724,7 @@ class AGS(object):
                                                     # EN ESTE PLAN ACADEMICO AUXILIAR
                                                     aux_plan_academico = plan_academico.copy()
                                                     # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
-                                                    index_mat_to_swap = plan_academico[cuatri].index(mat)
+                                                    index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
                                                     aux_plan_academico[cuatrimestre_indice].append(mat)
                                                     aux_plan_academico[cuatri].append(asignatura)
                                                     aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
@@ -733,11 +749,12 @@ class AGS(object):
     # IMPRIME LOS INDIVIDUOS QUE CONTENGA POB_TOTAL
     def print_test(self):
         # IMPRIME A LOS INDIVIDUOS PARA DESPUES
-        for i in range(len(self.pob_total)):
+        for i in (self.pob_total):
             print("--------------------")
-            print("ID:", self.pob_total[i].id)
-            print("BLOQUE:", self.pob_total[i].bloque)
-            print("ASIGNATURAS", self.pob_total[i].asignaturas)
+            print("ID:", i.get_id())
+            print("BLOQUE:", i.get_bloque())
+            print("ASIGNATURAS", i.get_lista_asignaturas())
+            print("APTITUD", i.get_fitness())
 
     def view_table(self):
         indiv_m = self.pob_total[len(self.pob_total)-1]
