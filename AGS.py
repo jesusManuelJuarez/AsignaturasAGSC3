@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import streamlit as st
 import itertools
-
+import numpy as np
 class AGS(object):
     # ATRIBUTOS PROPIOS DE CLASE
     num_generation = 0
@@ -85,7 +85,7 @@ class AGS(object):
 
             # MUESTRA EL MEJOR INDIVUDIO
             st.write("Trayectoria a seguir:")
-            # self.view_table()
+            self.view_table()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_generation += 1
             # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
@@ -683,10 +683,11 @@ class AGS(object):
         asig_ind = indiv_m.get_lista_asignaturas()
         lim_cu = len(asig_ind) + self.cu_a
 
+        print("EL MEJOR INDIVIDUO", asig_ind)
         print("MUESTRA TABLA GRAFICAMENTE")
         df = pd.DataFrame(
             asig_ind,
-            columns = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
+            index = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
         # IMPRIME LA TABLA
         st.table(df)
 
