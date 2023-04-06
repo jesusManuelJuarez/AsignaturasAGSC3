@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # CREACION DE FORMULARIO EN STREAMLIT
     form = ts.form(key="my_form")
     po = form.text_input("Ingrese POBLACIÓN MÁXIMA (min: 6)")
-    pc = 0.5
+    pc = 0.6
     generation = form.text_input("Ingrese GENERACIÓN")
     cu_a = form.text_input("Ingrese CUATRIMESTRE A CURSAR")
     matricula = form.text_input("Ingrese MATRICULA")
