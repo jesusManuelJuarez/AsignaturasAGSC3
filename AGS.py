@@ -234,29 +234,30 @@ class AGS(object):
         bloque = len(self.pob_selec[0].get_lista_asignaturas())
 
         # INDIVIDUOS ORIGINALES CRUZADOS
-        print(len(self.pob_selec))
+        print(len(self.pob_selec))  # .self
         print("-----ANTES DE CRUZA--------")
         for g in range(len(pob_selec)):
-            print(pob_selec[g].get_lista_asignaturas())
+            print(pob_selec[g].get_lista_asignaturas()) #
 
-        print("-------------")
+        print("------DESPUES DE CRUZA SIN CORREGIR AÚN-------")
         # SE ITERA EN LA POBLACION SELECCIONADA A CRUZA
         for i in range(len(pob_selec) - 1):
             asig_c = []
-            asig_ind = pob_selec[i].get_lista_asignaturas()
-            asig_ind_af = pob_selec[i+1].get_lista_asignaturas()
+            asig_ind = pob_selec[i].get_lista_asignaturas()  # .get_lista_asignaturas()
+            asig_ind_af = pob_selec[i + 1].get_lista_asignaturas()  # .get_lista_asignaturas()
+
             # SE ITERA EN CADA BLOQUE DE LA POB SELECCIONA A CRUZA
             for e in range(bloque):
                 asig_c.append(asig_ind[e] + asig_ind_af[e])
-                # indiv_d.append(pob_selec[i+1][e] + pob_selec[i][e])
+            # indiv_d.append(pob_selec[i+1][e] + pob_selec[i][e])|
 
             # CREACION DE INDIVODUO
             print(asig_c)
             print("linea segun lista")
-            print(list(asig_c))
+            # print(list(asig_c))
             individuo = Individuo(id, self.bloque, asig_c)
             self.pob_cruza.append(individuo)
-            # pob_cruza.append(indiv_d)
+            #pob_cruza.append(asig_c)  # indi_d
 
         # CORRECCION DE FALTANTES Y ELEMENTOS REPETIDOS
         # SE ITERA POR CADA ASIGNATURA NO CURSADA
@@ -265,16 +266,16 @@ class AGS(object):
             print(asignaturas_s[search])
             index = None
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
-            for e in range(len(self.pob_cruza)):
+            for e in range(len(self.pob_cruza)):  # .self
                 print("---------------------")
-                asig_ind = pob_selec[e].get_lista_asignaturas()
+                asig_ind = self.pob_cruza[e].get_lista_asignaturas()  # .get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
                 for i in range(len(asig_ind)):
-
                     print("--------------")
                     # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
                     for o in range(len(asig_ind[i])):
+
                         # SE BUSCA LA ASIGNATURA
                         value = asignaturas_s[search] == asig_ind[i][o]
                         # SI SE ENCUENTRA ENTONCES SE SUMA +1
@@ -287,25 +288,26 @@ class AGS(object):
                                 print("index", index)
                             except:
                                 print("index = none")
-                        print("cont", cont)
-                    # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
+                            print("cont", cont)
+                            # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
                     if cont > 1:
                         asig_ind[i].pop(index)
                         cont += -1
                         print("borrar")
-                # SE ACTUALIZA LA POB_CRUZA
-                self.pob_cruza[e].set_lista_asignaturas(asig_ind)
 
-        # AGREGANDO DE POB_CRUZA A POB_TOTAL
-        for w in range(len(self.pob_cruza)):
-            self.pob_cruza[w].set_id(len(self.pob_total))
-            self.pob_muta.append(self.pob_cruza[w])
+                # SE ACTUALIZA LA POB_CRUZA
+                self.pob_cruza[e].set_lista_asignaturas(asig_ind)  # .self .set_lista_asignaturas(asig_ind)
+
+        # AGREGANDO DE POB_CRUZA A POB_MUTA
+        for w in range(len(self.pob_cruza)):  # .self
+            # self.pob_cruza[w].set_id(len(self.pob_total))  # .
+            self.pob_muta.append(self.pob_cruza[w])  # .self .self
 
         print("-----DESPUES DE CRUZA--------")
-        print("pob en cruza:", len(self.pob_cruza))
-        print("pob en muta:", len(self.pob_muta))
+        print("pob en cruza:", len(self.pob_cruza))  # .self
+        print("pob en muta:", len(self.pob_muta))  # .self
         for q in range(len(self.pob_muta)):
-            print(self.pob_muta[q].get_lista_asignaturas())
+            print(self.pob_muta[q].get_lista_asignaturas())  # .self  .get_lista_asignaturas()
 
     # FUNCION PARA PROCESO DE MUTA
     def mutates(self):
