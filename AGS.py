@@ -692,6 +692,7 @@ class AGS(object):
             index = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
         # IMPRIME LA TABLA
         st.table(df)
+        st.write("Aptitud:", indiv_m.get_fitness)
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
