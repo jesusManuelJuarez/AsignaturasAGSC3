@@ -85,7 +85,7 @@ class AGS(object):
 
             # MUESTRA EL MEJOR INDIVUDIO
             st.write("Trayectoria a seguir:")
-            # self.view_table()
+            self.view_table()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_generation += 1
             # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
@@ -255,6 +255,7 @@ class AGS(object):
             print("linea segun lista")
             print(list(asig_c))
             individuo = Individuo(id, self.bloque, asig_c)
+            individuo.set_fitness(self.fitness(individuo))
             self.pob_cruza.append(individuo)
             # pob_cruza.append(indiv_d)
 
@@ -267,7 +268,7 @@ class AGS(object):
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
             for e in range(len(self.pob_cruza)):
                 print("---------------------")
-                asig_ind = pob_selec[e].get_lista_asignaturas()
+                asig_ind = self.pob_cruza[e].get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
                 for i in range(len(asig_ind)):
@@ -686,9 +687,10 @@ class AGS(object):
         print("MUESTRA TABLA GRAFICAMENTE")
         df = pd.DataFrame(
             asig_ind,
-            columns = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
+            index = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
         # IMPRIME LA TABLA
         st.table(df)
+        st.write("Aptitud:",indiv_m.get_fitness())
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
