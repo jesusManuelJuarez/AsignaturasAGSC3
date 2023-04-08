@@ -769,6 +769,7 @@ class AGS(object):
         # IMPRIME LA TABLA
         st.table(df)
         st.write("Aptitud:",indiv_m.get_fitness())
+        st.write("Generación:", self.num_generation)
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
