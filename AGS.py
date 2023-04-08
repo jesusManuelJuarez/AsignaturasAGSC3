@@ -4,8 +4,13 @@ import sys
 import pandas as pd
 import streamlit as st
 import itertools
+from graficas import tablas
+from graficas import grafica_fitness
 
 class AGS(object):
+    # GRAFICA
+    historial_aptitud_gen = []
+    historial_individio_gen  = []
     # ATRIBUTOS PROPIOS DE CLASE
     num_generation = 0
     asignaturas_s = []
@@ -95,7 +100,7 @@ class AGS(object):
                 self.print_test()
                 
                 break
-        
+        self.view_grafica()
         print("FINALIZO")
 
     # FUNCION PARA LA CREACION DE INDIVIDUOS
@@ -363,6 +368,16 @@ class AGS(object):
             validar = self.validacion(individuo)
             if validar:
                 indiviuos_validos.append(individuo)
+
+        # SI LA GENERACION ES 0, ENTONCES POB_TOTAL CONTIENE A LOS INDIVIDUOS PADRES Y SE PROCEDE A GUARDAR SU VALOR DE APTITUD COMO GEN 0
+        if self.num_generation == 0:
+            historial_aptitud = []
+            historial_individuo = []
+            for e in self.pob_total:
+                historial_aptitud.append(e.get_fitness())
+                historial_individuo.append(e)
+            self.historial_aptitud_gen.append(historial_aptitud)
+            self.historial_individio_gen.append(historial_individuo)
                 
         for child in indiviuos_validos:
             self.pob_total.append(child)
@@ -423,8 +438,16 @@ class AGS(object):
             for _ in range(2):
                 self.pob_total.pop(0)
         
-        
         print(f"Total de individuos despues de la PODA: {len(self.pob_total)}")
+
+        # GUARDA EL VALOR DE APTITUD DE LOS HIJOS DESPUES DE PODA
+        historial_aptitud = []
+        historial_individuo = []
+        for e in self.pob_total:
+            historial_aptitud.append(e.get_fitness())
+            historial_individuo.append(e)
+        self.historial_aptitud_gen.append(historial_aptitud)        
+        self.historial_individio_gen.append(historial_individuo)
 
     def fitness(self, individuo):
         plan_estudios = individuo.get_lista_asignaturas()
@@ -802,3 +825,6 @@ class AGS(object):
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
+        grafica_fitness(self.historial_aptitud_gen)
+        tablas(self.historial_individio_gen)
+
