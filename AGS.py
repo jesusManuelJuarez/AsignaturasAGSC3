@@ -1,11 +1,14 @@
 from Individuo import *
+import matplotlib
 import random
 import sys
 import pandas as pd
 import streamlit as st
 import itertools
-from graficas import tablas
+import copy
+from tablas import tabla
 from graficas import grafica_fitness
+import multiprocessing as mp
 
 class AGS(object):
     # GRAFICA
@@ -54,6 +57,10 @@ class AGS(object):
     materias = list(materias)
     seracion_earlier = list(seriacionE)
     seracion_later = list(seriacionL)
+    
+    mp.freeze_support()
+    # Inicializa Matplotlib
+    matplotlib.use('TkAgg')
     
 
     #  CONSTRUCTOR DE LA CLASE AGS QUE SE INICIALIZA AL SER INSTANCIADA
@@ -290,18 +297,18 @@ class AGS(object):
         # CORRECCION DE FALTANTES Y ELEMENTOS REPETIDOS
         # SE ITERA POR CADA ASIGNATURA NO CURSADA
         for search in range(len(asignaturas_s)):
-            print("-------------------------------")
-            print(asignaturas_s[search])
+            # print("-------------------------------")
+            # print(asignaturas_s[search])
             index = None
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
             for e in range(len(self.pob_cruza)):
-                print("---------------------")
+                # print("---------------------")
                 asig_ind = self.pob_cruza[e].get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
                 for i in range(len(asig_ind)):
 
-                    print("--------------")
+                    # print("--------------")
                     # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
                     for o in range(len(asig_ind[i])):
                         # SE BUSCA LA ASIGNATURA
@@ -316,7 +323,7 @@ class AGS(object):
                                 print("index", index)
                             except:
                                 print("index = none")
-                        print("cont", cont)
+                        # print("cont", cont)
                     # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
                     if cont > 1:
                         asig_ind[i].pop(index)
@@ -382,46 +389,6 @@ class AGS(object):
         for child in indiviuos_validos:
             self.pob_total.append(child)
         print(f"Total de individuos despues eliminar invalidos: {len(self.pob_total)}")
-        
-        #  SE BUSCAN INDIVIDUOS REPETIDOS PARA ELIMINARLOS
-        # indiviuos_validos = []
-        # plans_not_repeated = []
-        
-        # for individuo in self.pob_total:
-        #     if individuo.get_lista_asignaturas() not in plans_not_repeated:
-        #         indiviuos_validos.append(individuo)
-        #         plans_not_repeated.append(individuo.get_lista_asignaturas())
-        
-        # if len(indiviuos_validos) >= 2:          
-        #     self.pob_total.clear()
-        #     self.pob_total = indiviuos_validos
-        # else:        
-        #     if len(self.pob_total) >= 2:
-        #         value = random.randint(2, (len(self.pob_total)))
-        #         for i in range(value):
-        #             random_index = random.randint(0,(len(self.pob_total) - 1))
-        #             if i != value:
-        #                 indiviuos_validos.append(self.pob_total[random_index])
-        #             else:
-        #                 plan_academico_original = self.pob_total[random_index].get_lista_asignaturas()
-        #                 nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
-        #                 self.pob_total[random_index].set_lista_asignaturas(nuevo_plan_academico_original)
-        #                 self.fitness(self.pob_total[random_index])
-        #                 indiviuos_validos.append(self.pob_total[random_index])
-        #         self.pob_total = []
-        #         self.pob_total = indiviuos_validos
-        #     else:
-        #         for individuo in self.pob_total:
-        #             indiviuos_validos.append(individuo)
-        #             plan_academico_original = individuo.get_lista_asignaturas()
-        #             nuevo_plan_academico_original = self.mutates_function(plan_academico_original)
-        #             individuo.set_lista_asignaturas(nuevo_plan_academico_original)
-        #             self.fitness(individuo)
-        #             indiviuos_validos.append(individuo)
-        #         self.pob_total.clear()
-        #         self.pob_total = indiviuos_validos
-
-        # print(f"Total de individuos despues eliminar repetidos: {len(self.pob_total)}")
         
         # Ordena la lista de individuos (pob total) de menor a mayor segun su valor de aptitud (fitness)
         self.pob_total = sorted(self.pob_total, key = lambda x: x.get_fitness())
@@ -567,7 +534,7 @@ class AGS(object):
                         move_made = False
                         # SI ES EL PRIMER CUATRIMESTRE SOLO PUEDE IR HACIA ADELANTE
                         if (pro_m >= self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
-                            print("Movimiento atras")
+                            # print("Movimiento atras")
                             if asignaturas_seriadas_later[0] != "NSD":
                                 # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
                                 # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA ANTERIOR)
@@ -681,7 +648,7 @@ class AGS(object):
                                                         break
                         # SI ES EL ULTIMO CUATRIMESTRE SOLO PUEDE IR HACIA ATRAS
                         elif (cuatrimestre_indice < (len(plan_academico) - 1)):
-                            print("Movimiento adelante")
+                            # print("Movimiento adelante")
                             if asignaturas_seriadas_earlier[0] != "NSD":
                                 # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
                                 # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA POSTERIOR)
@@ -826,5 +793,5 @@ class AGS(object):
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
         grafica_fitness(self.historial_aptitud_gen)
-        tablas(self.historial_individio_gen)
+        tabla(self.historial_individio_gen)
 
