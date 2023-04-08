@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 import streamlit as st
 import itertools
+from graficas import tablas
+from graficas import grafica_fitness
 
 class AGS(object):
     # GRAFICA
@@ -98,7 +100,7 @@ class AGS(object):
                 self.print_test()
                 
                 break
-        
+        self.view_grafica()
         print("FINALIZO")
 
     # FUNCION PARA LA CREACION DE INDIVIDUOS
@@ -791,3 +793,6 @@ class AGS(object):
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
+        grafica_fitness(self.historial_aptitud_gen)
+        tablas(self.historial_individio_gen)
+
