@@ -764,9 +764,10 @@ class AGS(object):
         print("MUESTRA TABLA GRAFICAMENTE")
         df = pd.DataFrame(
             asig_ind,
-            columns = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
+            index = ('Cuatrimestre %d' % i for i in range(self.cu_a, lim_cu)))
         # IMPRIME LA TABLA
         st.table(df)
+        st.write("Aptitud:",indiv_m.get_fitness())
 
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
