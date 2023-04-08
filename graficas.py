@@ -20,8 +20,8 @@ def grafica_fitness(generaciones):
             conta += 1
         gen_contador +=1
         media = media / conta
-        values_y_better.append(fitness_min)
-        values_y_worst.append(fitness_max)
+        values_y_better.append(fitness_max)
+        values_y_worst.append(fitness_min)
         average.append(media)         
     
     val_x, val_y_max, val_y_min, val_y_ave = values_x, [], [], []
