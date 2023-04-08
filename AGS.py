@@ -6,7 +6,6 @@ import pandas as pd
 import streamlit as st
 import itertools
 import copy
-from graficas import tabla
 from graficas import grafica_fitness
 import multiprocessing as mp
 
@@ -793,5 +792,4 @@ class AGS(object):
     def view_grafica(self):
         print("MUESTRA LA GRAFICA VISUALMENTE")
         grafica_fitness(self.historial_aptitud_gen)
-        tabla(self.historial_individio_gen)
 
