@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import matplotlib
-
+import time
+import tkinter as Tk
 matplotlib.use('TkAgg')
 
 def grafica_fitness(generaciones):
@@ -61,49 +62,13 @@ def grafica_fitness(generaciones):
 
     root = Tk.Tk()
     root.withdraw()
-    root.after(0, show, filename)
+    root.after(0, show, filename, root)
     root.mainloop()
 
 
-def show(filename):
+def show(filename, root):
     plt.savefig("./imagenes/" + filename, transparent=False, dpi=400, bbox_inches='tight')
     plt.show()
     plt.close()
-
-
-def tabla(generaciones):
-    conta, gen_contador = 1, 0
-    for generacion in generaciones:
-        if conta == round(len(generaciones) * 0.2):
-            conta = 0
-            row = []
-            fig, ax = plt.subplots()
-            
-            columns_lbl = ('Generación', 'Aptitud', 'Plan académico')
-
-            for individuo in generacion:
-                row.append([gen_contador, individuo.get_fitness(), individuo.get_lista_asignaturas()])
-            ax.set_title("Generación " + str(gen_contador))
-            ax.axis('off')
-            tabla = ax.table(
-                cellText=row,
-                colLabels=columns_lbl,
-                loc='center',
-            )
-            tabla.auto_set_font_size(False)
-            tabla.set_fontsize(9)
-            manager = plt.get_current_fig_manager()
-            manager.full_screen_toggle()
-            
-            fecha = str(datetime.datetime.now().date())
-            tiempo = str(datetime.datetime.now().strftime('%H-%M-%S'))
-    
-            filename = "Generación " + str(gen_contador)+ "_" + fecha + '--' + tiempo + '.png'
-
-            fig.set_size_inches(12, 8)
-            plt.savefig("./imagenes/" + filename,
-                        transparent=False, dpi=400, bbox_inches='tight')
-            plt.show()
-            plt.close()      
-        conta += 1
-        gen_contador += 1
+    time.sleep(3)
+    root.destroy()
