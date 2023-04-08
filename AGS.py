@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 import itertools
 import copy
-from tablas import tabla
+from graficas import tabla
 from graficas import grafica_fitness
 import multiprocessing as mp
 
