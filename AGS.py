@@ -515,7 +515,9 @@ class AGS(object):
         return True
     
     def mutates_function(self, plan_academico):
+        # print("Mutates function")
         for cuatrimestre in plan_academico:
+            # print(plan_academico)
             cuatrimestre_indice = plan_academico.index(cuatrimestre)
             prom_c = random.random()
             #VALIDAMOS SI EL CUATRIMESTRE MUTARA O NO
@@ -542,6 +544,7 @@ class AGS(object):
                         move_made = False
                         # SI ES EL PRIMER CUATRIMESTRE SOLO PUEDE IR HACIA ADELANTE
                         if (pro_m >= self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
+                            print("Movimiento atras")
                             if asignaturas_seriadas_later[0] != "NSD":
                                 # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
                                 # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA ANTERIOR)
@@ -606,15 +609,28 @@ class AGS(object):
                                                 if index_cuatri_to_insert != -1:
                                                     able_to_insert = True
                                                 break
-                                else: 
+                                else:
+                                    index_cuatri_to_insert = 0
                                     able_to_insert = True
                                 # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
                                 if able_to_insert:
                                     # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
-                                    if (len(plan_academico[index_cuatri_to_insert]) < 7):
-                                        plan_academico[index_cuatri_to_insert].append(asignatura)
-                                        cuatrimestre.pop(index_mat_local)
-                                    else:
+                                    validate = False
+                                    for cuatri in range(len(plan_academico)):
+                                        if cuatri >= index_cuatri_to_insert and cuatri < cuatrimestre_indice and len(plan_academico[cuatri]) < 7:
+                                            aux_plan_academico = copy.deepcopy(plan_academico)
+                                            aux_plan_academico[cuatri].append(asignatura)
+                                            aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                            individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                            validate = self.validacion(individuo_aux)
+                                            if validate:
+                                                plan_academico[cuatri].append(asignatura)
+                                                cuatrimestre.pop(index_mat_local)
+                                                move_made = True
+                                                break
+                                            else:
+                                                aux_plan_academico = []
+                                    if not move_made:
                                         validate = False
                                         # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
                                         # ENTRE EL CUATRIMESTRE EL CUATRIMESTRE INDICADO PARA LA INSERSION Y EL ANTERIOR AL ACTUAL
@@ -623,7 +639,7 @@ class AGS(object):
                                                 for mat in plan_academico[cuatri]:
                                                     # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
                                                     # EN ESTE PLAN ACADEMICO AUXILIAR
-                                                    aux_plan_academico = plan_academico.copy()
+                                                    aux_plan_academico = copy.deepcopy(plan_academico)
                                                     # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
                                                     index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
                                                     aux_plan_academico[cuatrimestre_indice].append(mat)
@@ -642,6 +658,7 @@ class AGS(object):
                                                         break
                         # SI ES EL ULTIMO CUATRIMESTRE SOLO PUEDE IR HACIA ATRAS
                         elif (cuatrimestre_indice < (len(plan_academico) - 1)):
+                            print("Movimiento adelante")
                             if asignaturas_seriadas_earlier[0] != "NSD":
                                 # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
                                 # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA POSTERIOR)
@@ -706,15 +723,28 @@ class AGS(object):
                                                 if index_cuatri_to_insert != -1:
                                                     able_to_insert = True
                                                 break
-                                else: 
+                                else:
+                                    index_cuatri_to_insert = len(plan_academico) - 1
                                     able_to_insert = True
                                 # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
                                 if able_to_insert:
                                     # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
-                                    if (len(plan_academico[index_cuatri_to_insert]) < 7):
-                                        plan_academico[index_cuatri_to_insert].append(asignatura)
-                                        cuatrimestre.pop(index_mat_local)
-                                    else:
+                                    validate = False
+                                    for cuatri in range(len(plan_academico)):
+                                        if cuatri >= index_cuatri_to_insert and cuatri < index_cuatri_asig_seriada and len(plan_academico[cuatri]) < 7:
+                                            aux_plan_academico = copy.deepcopy(plan_academico)
+                                            aux_plan_academico[cuatri].append(asignatura)
+                                            aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                            individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                            validate = self.validacion(individuo_aux)
+                                            if validate:
+                                                plan_academico[cuatri].append(asignatura)
+                                                cuatrimestre.pop(index_mat_local)
+                                                move_made = True
+                                                break
+                                            else:
+                                                aux_plan_academico = []
+                                    if not move_made:
                                         validate = False
                                         # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
                                         # ENTRE EL CUATRIMESTRE POSTERIOR AL ACTUAL Y EL CUATRIMESTRE INDICADO PARA LA INSERSION
@@ -723,7 +753,7 @@ class AGS(object):
                                                 for mat in plan_academico[cuatri]:
                                                     # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
                                                     # EN ESTE PLAN ACADEMICO AUXILIAR
-                                                    aux_plan_academico = plan_academico.copy()
+                                                    aux_plan_academico = copy.deepcopy(plan_academico)
                                                     # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
                                                     index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
                                                     aux_plan_academico[cuatrimestre_indice].append(mat)
@@ -741,7 +771,6 @@ class AGS(object):
                                                         plan_academico[cuatri].pop(index_mat_to_swap)
                                                         break
         return plan_academico
-
 
     # CORRECION DE LOS INDIVIDUOS
     def correccion(self):
