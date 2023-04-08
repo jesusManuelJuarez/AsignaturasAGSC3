@@ -86,7 +86,7 @@ class AGS(object):
 
             # MUESTRA EL MEJOR INDIVUDIO
             st.write("Trayectoria a seguir:")
-            # self.view_table()
+            self.view_table()
             # CONTAR PARA CONTAR NUMERO DE CICLOS
             self.num_generation += 1
             # CONDIIONAL PARA DETENER CICLO CUANDO SEA IGUAL A generation
@@ -278,24 +278,25 @@ class AGS(object):
             print("linea segun lista")
             print(list(asig_c))
             individuo = Individuo(id, self.bloque, asig_c)
+            individuo.set_fitness(self.fitness(individuo))
             self.pob_cruza.append(individuo)
             # pob_cruza.append(indiv_d)
 
         # CORRECCION DE FALTANTES Y ELEMENTOS REPETIDOS
         # SE ITERA POR CADA ASIGNATURA NO CURSADA
         for search in range(len(asignaturas_s)):
-            # print("-------------------------------")
-            # print(asignaturas_s[search])
+            print("-------------------------------")
+            print(asignaturas_s[search])
             index = None
             # SE ITERA POR CADA INDIVIDUO EN LA POB_CRUZA
             for e in range(len(self.pob_cruza)):
-                # print("---------------------")
-                asig_ind = pob_selec[e].get_lista_asignaturas()
+                print("---------------------")
+                asig_ind = self.pob_cruza[e].get_lista_asignaturas()
                 cont = 0
                 # SE ITERA POR CADA BLOQUE DE LOS INDIVIDUOS EN LA POB_CRUZA
                 for i in range(len(asig_ind)):
 
-                    # print("--------------")
+                    print("--------------")
                     # SE ITERA POR CADA ASIGNATURA EN LOS BLOQUES DE CADA INDIVDUO EN LA POB_CRUZA
                     for o in range(len(asig_ind[i])):
                         # SE BUSCA LA ASIGNATURA
@@ -307,10 +308,10 @@ class AGS(object):
                             # CAUSA EXCEPCION
                             try:
                                 index = asig_ind[i].index(asignaturas_s[search])
-                                # print("index", index)
+                                print("index", index)
                             except:
                                 print("index = none")
-                        # print("cont", cont)
+                        print("cont", cont)
                     # SI HAY MAS DE UNA ASIGNATURA, ES DECIR "REPETIDOS" ENTONCES ELIMINA Y DECREMENTA EL CONTADOR
                     if cont > 1:
                         asig_ind[i].pop(index)
