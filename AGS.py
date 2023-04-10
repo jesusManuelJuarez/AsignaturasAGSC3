@@ -132,8 +132,10 @@ class AGS(object):
             individuo_0 = self.individuo_init()
             lista_asignaturas_original = individuo_0.get_lista_asignaturas()
                 
-            # CREAR UN ARREGLO DE ASIGNATURAS MUTADO DEL INDIVIDUO 0
-            sublistas_asignaturas = self.mutates_function(lista_asignaturas_original)
+            # ITERAR 10 VECES UN ARREGLO DE ASIGNATURAS MUTADO DEL INDIVIDUO 0
+            sublistas_asignaturas = copy.deepcopy(lista_asignaturas_original)
+            for _ in range(10):
+                sublistas_asignaturas = self.mutates_function(sublistas_asignaturas)
             # CREACION DE INDIVIDUO
             individuo = Individuo(id_i, self.bloque, sublistas_asignaturas)
             
@@ -477,7 +479,7 @@ class AGS(object):
                 num_cuatri_mate = int(mat[0])
                 if (periodo_actual not in self.cuatrimestres[num_cuatri_mate]):
                     return False
-                validate = self.validar_part_2(mat, materias_cursar, materias_validas)
+                validate = self.validar_part_2(mat, materias_cursar, materias_validas, cuatri)
                 if not validate:
                     return False
                 materias_validas.append(mat)
@@ -486,24 +488,20 @@ class AGS(object):
         return True
 
     # VALIDA QUE LAS MATERIAS CORRESPONDAN CON LA SERIACION Y SE RESPETE LA MISMA
-    def validar_part_2(self, mat, materias_cursar, materias_validas):
+    def validar_part_2(self, mat, materias_cursar, materias_validas, cuatri):
         index = self.materias.index(mat)
         aux_seracion_earlier = self.seracion_earlier[index].split("-")
         # print("Materia(s) seriacionB: ", aux_seriacionB)
-        if (len(aux_seracion_earlier) > 1):
-            for seriada in aux_seracion_earlier:
-                if seriada in materias_cursar and seriada not in materias_validas:
-                    # print(f"{seriada} aun debe cursarse")
-                    return False
-            return True
         if aux_seracion_earlier[0] == "NSD":
             return True
-        if aux_seracion_earlier[0] in materias_cursar and aux_seracion_earlier[0] not in materias_validas:
-            # print(f"{aux_seracion_earlier[0]} aun debe cursarse")
-            return False
+        for seriada in aux_seracion_earlier:
+            if (seriada in materias_cursar and seriada not in materias_validas) or seriada in cuatri:
+                # print(f"{seriada} aun debe cursarse")
+                return False
         return True
     
     def mutates_function(self, plan_academico):
+        list_asig_checked = []
         # print("Mutates function")
         for cuatrimestre in plan_academico:
             # print(plan_academico)
@@ -514,251 +512,255 @@ class AGS(object):
                 # print(f"----------Mutando cuatrimestre {cuatrimestre_indice+1}----------")
                 #SE RECORREN TODAS LA ASIGNATURAS DENTRO DEL CUATRIMESTRE
                 for asignatura in cuatrimestre:
-                    #SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
-                    prom_a = random.random()
-                    #SE VALIDA SI LA ASIGNATURA MUTARA O NO
-                    if prom_a <= self.pm_a:
-                        # print(f"----------Mutando asignatura {asignatura}----------")
-                        # SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
-                        pro_m = random.random()
-                        # SE VALIDA SI LA ASIGNATURA SE MOVERA HACIA ADELANTE O HACIA ATRAS DEPENDIENDO DEL VALOR ALEATORIO
-                        # SE GUARDA EL INDICE DE LA MATERIA EN EL CUATRIMESTRE ACTUAL
-                        index_mat_local = cuatrimestre.index(asignatura)
-                        # SE OBTIENE SU INDICE DE LA LISTA DE MATERIAS GENERAL
-                        # PARA PODER OBTENER SUS MATERIAS ANTERIORES Y POSTERIORES SERIADAS
-                        # Y UNA VARIABLE BOOLEAN PARA COMPROBAR EL ESTATUS DE SI SE REALIZO EL MOVIMIENTO
-                        index_mat_general = self.materias.index(asignatura)
-                        asignaturas_seriadas_earlier = self.seracion_earlier[index_mat_general].split("-")
-                        asignaturas_seriadas_later = self.seracion_later[index_mat_general].split("-")
-                        move_made = False
-                        # SI ES EL PRIMER CUATRIMESTRE SOLO PUEDE IR HACIA ADELANTE
-                        if (pro_m >= self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
-                            # print("Movimiento atras")
-                            if asignaturas_seriadas_later[0] != "NSD":
-                                # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
-                                # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA ANTERIOR)
-                                # Y A QUE POSICION SE PODRIA MOVER
-                                able_to_swap = False
-                                index_cuatri_to_swap = -1   
-                                index_mat_to_swap = -1
-                                max_index_cuatri = -1
-                                # SI LA SERIACION ANTERIOR A LA ASIGNATURA NO ES UN NSD (NO SERIADA), BUSCARA
-                                # EL INDICE DEL MAXIMO CUATRIMESTRE EN EL QUE PUEDE BUSCAR PARA HACER EL
-                                # INTERCAMBIO SIN AFETAR LA SERIACION
-                                if asignaturas_seriadas_earlier[0] != "NSD":
-                                    for index_cuatri in range(len(plan_academico)):
-                                        if index_cuatri <= cuatrimestre_indice:
-                                            for asig_seriad in asignaturas_seriadas_earlier:
-                                                if asig_seriad in plan_academico[index_cuatri]:
-                                                    max_index_cuatri = index_cuatri
-                                # SE RECORRE EL PLAN ACADEMICO A PARTIR DEL CUATRIMESTRE MAXIMO EN EL QUE PUEDE BUSCAR                            
-                                for index_cuatri in range(len(plan_academico)):
-                                    if index_cuatri <= cuatrimestre_indice and index_cuatri > max_index_cuatri:
-                                        # SE RECORRE LAS ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA ACTUAL
-                                        for mat_seriada in asignaturas_seriadas_later:
-                                            # SI ALGUNA DE LAS ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA ACTUAL SE ENCUENTRA
-                                            # EN ALGUN CUATRIMESTRE ANTERIOR AL ACTUAL
-                                            if mat_seriada in plan_academico[index_cuatri]:
-                                                # SE GUARDA LA INFORMACION DEL INDICE DE ESE CUATRIMESTRE DENTRO DEL PLAN ACADEMICO
-                                                # Y EL INDICE DE LA ASIGNATURA SERIADA
-                                                able_to_swap = True
-                                                index_cuatri_to_swap = index_cuatri
-                                                index_mat_to_swap = plan_academico[index_cuatri].index(mat_seriada)
-                                # SE VALIDA SI ES POSBILE HACER EL INTERCAMBIO, SIEMPRE Y CUANDO EL CUATRIMESTRE HABILITADO NO SEA EL ACTUAL
-                                if able_to_swap and index_cuatri_to_swap != cuatrimestre_indice:
-                                    # SI ES VALIDO, SE HACE EL INTERCAMBIO DE ASIGNATURAS Y ACTUALIZA EL ESTATUS DEL MOVIMIENTO
-                                    cuatrimestre.append(plan_academico[index_cuatri_to_swap][index_mat_to_swap])
-                                    plan_academico[index_cuatri_to_swap].append(asignatura)
-                                    cuatrimestre.pop(index_mat_local)
-                                    plan_academico[index_cuatri_to_swap].pop(index_mat_to_swap)
-                                    move_made = True
-                            # SE VALIDA SI EL MOVIMIENTO NO SE HA HECHO (PORQUE NO ENCONTRO ASIGNATURAS SERIADAS POSTERIORES
-                            # EN CUATRIMESTRES ANTERIORES, O PORQUE ES UN NSD) 
-                            if not move_made:
-                                # SI NO SE HA HECHO EL MOVIMIENTO INTENTARA INSERTAR LA ASIGNATURA
-                                # PRIMERO SE BUSCARA SI UNA ASIGNATURA SERIADA ANTERIOR A LA ASIGNATURA ACTUAL
-                                # SE ENCUENTRA EN EN CUATRIMESTRES ANTERIORES
-                                able_to_insert = False
-                                find_asignatura = False
-                                index_cuatri_to_insert = -1
-                                index_cuatri_asig_seriada = -1
-                                # SE COMPRUEBA SI EXITEN ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA
-                                if asignaturas_seriadas_earlier[0] != "NSD":
-                                    # SI HAY ASIGNATURAS SERIADAS SE BUSCA LA MEJOR POSICION
-                                    for index_cuatri in range(len(plan_academico)):
-                                        if index_cuatri <= cuatrimestre_indice:
-                                            for mat_seriada in asignaturas_seriadas_earlier:
-                                                if mat_seriada in plan_academico[index_cuatri]:
-                                                    index_cuatri_asig_seriada = index_cuatri
-                                                    find_asignatura = True
-                                                    if index_cuatri_asig_seriada < (cuatrimestre_indice - 1):
-                                                        index_cuatri_to_insert = index_cuatri_asig_seriada + 1
-                                                    break
-                                            if find_asignatura:
-                                                if index_cuatri_to_insert != -1:
-                                                    able_to_insert = True
-                                                break
-                                else:
-                                    index_cuatri_to_insert = 0
-                                    able_to_insert = True
-                                # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
-                                if able_to_insert:
-                                    # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
-                                    validate = False
-                                    for cuatri in range(len(plan_academico)):
-                                        if cuatri >= index_cuatri_to_insert and cuatri < cuatrimestre_indice and len(plan_academico[cuatri]) < 7:
-                                            aux_plan_academico = copy.deepcopy(plan_academico)
-                                            aux_plan_academico[cuatri].append(asignatura)
-                                            aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                            individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
-                                            validate = self.validacion(individuo_aux)
-                                            if validate:
-                                                plan_academico[cuatri].append(asignatura)
-                                                cuatrimestre.pop(index_mat_local)
-                                                move_made = True
-                                                break
-                                            else:
-                                                aux_plan_academico = []
-                                    if not move_made:
-                                        validate = False
-                                        # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
-                                        # ENTRE EL CUATRIMESTRE EL CUATRIMESTRE INDICADO PARA LA INSERSION Y EL ANTERIOR AL ACTUAL
-                                        for cuatri in range(len(plan_academico)):
-                                            if cuatri < cuatrimestre_indice and cuatri >= index_cuatri_asig_seriada:
-                                                for mat in plan_academico[cuatri]:
-                                                    # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
-                                                    # EN ESTE PLAN ACADEMICO AUXILIAR
-                                                    aux_plan_academico = copy.deepcopy(plan_academico)
-                                                    # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
-                                                    index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
-                                                    aux_plan_academico[cuatrimestre_indice].append(mat)
-                                                    aux_plan_academico[cuatri].append(asignatura)
-                                                    aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                                    aux_plan_academico[cuatri].pop(index_mat_to_swap)
-                                                    individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
-                                                    validate = self.validacion(individuo_aux)
-                                                    # SE VALIDA SI EL INTERCAMBIO DE ASIGNATURAS ES VALIDO COMO UN PLAN ACADEMICO
-                                                    if validate:
-                                                        # SI ES VALIDO, REALIZARA EL INTERCAMBIO EN EL PLAN ACADEMICO REAL
-                                                        plan_academico[cuatrimestre_indice].append(mat)
-                                                        plan_academico[cuatri].append(asignatura)
-                                                        plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                                        plan_academico[cuatri].pop(index_mat_to_swap)
-                                                        break
-                        # SI ES EL ULTIMO CUATRIMESTRE SOLO PUEDE IR HACIA ATRAS
-                        elif (cuatrimestre_indice < (len(plan_academico) - 1)):
-                            # print("Movimiento adelante")
-                            if asignaturas_seriadas_earlier[0] != "NSD":
-                                # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
-                                # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA POSTERIOR)
-                                # Y A QUE POSICION SE PODRIA MOVER
-                                able_to_swap = False
-                                index_cuatri_to_swap = -1   
-                                index_mat_to_swap = -1
-                                max_index_cuatri = len(plan_academico)
-                                # SI LA SERIACION POSTERIOR A LA ASIGNATURA NO ES UN NSD (NO SERIADA), BUSCARA
-                                # EL INDICE DEL MAXIMO CUATRIMESTRE EN EL QUE PUEDE BUSCAR PARA HACER EL
-                                # INTERCAMBIO SIN AFETAR LA SERIACION
+                    if asignatura not in list_asig_checked:
+                        list_asig_checked.append(asignatura)
+                        #SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
+                        prom_a = random.random()
+                        #SE VALIDA SI LA ASIGNATURA MUTARA O NO
+                        if prom_a <= self.pm_a:
+                            # print(f"----------Mutando asignatura {asignatura}----------")
+                            # SE GENERA UN VALOR ALEATORIO ENTRE 0 Y 1
+                            pro_m = random.random()
+                            # SE VALIDA SI LA ASIGNATURA SE MOVERA HACIA ADELANTE O HACIA ATRAS DEPENDIENDO DEL VALOR ALEATORIO
+                            # SE GUARDA EL INDICE DE LA MATERIA EN EL CUATRIMESTRE ACTUAL
+                            index_mat_local = cuatrimestre.index(asignatura)
+                            # SE OBTIENE SU INDICE DE LA LISTA DE MATERIAS GENERAL
+                            # PARA PODER OBTENER SUS MATERIAS ANTERIORES Y POSTERIORES SERIADAS
+                            # Y UNA VARIABLE BOOLEAN PARA COMPROBAR EL ESTATUS DE SI SE REALIZO EL MOVIMIENTO
+                            index_mat_general = self.materias.index(asignatura)
+                            asignaturas_seriadas_earlier = self.seracion_earlier[index_mat_general].split("-")
+                            asignaturas_seriadas_later = self.seracion_later[index_mat_general].split("-")
+                            move_made = False
+                            # SI ES EL PRIMER CUATRIMESTRE SOLO PUEDE IR HACIA ADELANTE
+                            if (pro_m >= self.pm_m and cuatrimestre_indice != 0) or (cuatrimestre_indice == (len(plan_academico) - 1)):
+                                # print("Movimiento atras")
                                 if asignaturas_seriadas_later[0] != "NSD":
+                                    # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
+                                    # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA ANTERIOR)
+                                    # Y A QUE POSICION SE PODRIA MOVER
+                                    able_to_swap = False
+                                    index_cuatri_to_swap = -1   
+                                    index_mat_to_swap = -1
+                                    max_index_cuatri = -1
+                                    # SI LA SERIACION ANTERIOR A LA ASIGNATURA NO ES UN NSD (NO SERIADA), BUSCARA
+                                    # EL INDICE DEL MAXIMO CUATRIMESTRE EN EL QUE PUEDE BUSCAR PARA HACER EL
+                                    # INTERCAMBIO SIN AFETAR LA SERIACION
+                                    if asignaturas_seriadas_earlier[0] != "NSD":
+                                        for index_cuatri in range(len(plan_academico)):
+                                            if index_cuatri <= cuatrimestre_indice:
+                                                for asig_seriad in asignaturas_seriadas_earlier:
+                                                    if asig_seriad in plan_academico[index_cuatri]:
+                                                        max_index_cuatri = index_cuatri
+                                    # SE RECORRE EL PLAN ACADEMICO A PARTIR DEL CUATRIMESTRE MAXIMO EN EL QUE PUEDE BUSCAR                            
                                     for index_cuatri in range(len(plan_academico)):
-                                        if index_cuatri > cuatrimestre_indice:
-                                            for asig_seriad in asignaturas_seriadas_later:
-                                                if asig_seriad in plan_academico[index_cuatri]:
-                                                    max_index_cuatri = index_cuatri
-                                # SE RECORRE EL PLAN ACADEMICO A PARTIR DEL CUATRIMESTRE QUE SE ESTA EVALUANDO ACTUALMENTE                             
-                                for index_cuatri in range(len(plan_academico)):
-                                    if index_cuatri >= cuatrimestre_indice and index_cuatri < max_index_cuatri:
-                                        # SE RECORRE LAS ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA ACTUAL
-                                        for mat_seriada in asignaturas_seriadas_earlier:
-                                            # SI ALGUNA DE LAS ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA ACTUAL SE ENCUENTRA
-                                            # EN ALGUN CUATRIMESTRE POSTERIOR AL ACTUAL
-                                            if mat_seriada in plan_academico[index_cuatri]:
-                                                # SE GUARDA LA INFORMACION DEL INDICE DE ESE CUATRIMESTRE DENTRO DEL PLAN ACADEMICO
-                                                # Y EL INDICE DE LA ASIGNATURA SERIADA
-                                                able_to_swap = True
-                                                index_cuatri_to_swap = index_cuatri
-                                                index_mat_to_swap = plan_academico[index_cuatri].index(mat_seriada)
-                                # SE VALIDA SI ES POSBILE HACER EL INTERCAMBIO, SIEMPRE Y CUANDO EL CUATRIMESTRE HABILITADO NO SEA EL ACTUAL
-                                if able_to_swap and index_cuatri_to_swap != cuatrimestre_indice:
-                                    # SI ES VALIDO, SE HACE EL INTERCAMBIO DE ASIGNATURAS Y ACTUALIZA EL ESTATUS DEL MOVIMIENTO
-                                    cuatrimestre.append(plan_academico[index_cuatri_to_swap][index_mat_to_swap])
-                                    plan_academico[index_cuatri_to_swap].append(asignatura)
-                                    cuatrimestre.pop(index_mat_local)
-                                    plan_academico[index_cuatri_to_swap].pop(index_mat_to_swap)
-                                    move_made = True
-                            # SE VALIDA SI EL MOVIMIENTO NO SE HA HECHO (PORQUE NO ENCONTRO ASIGNATURAS SERIADAS ANTERIORES
-                            # EN CUATRIMESTRES POSTERIORES, O PORQUE ES UN NSD) 
-                            if not move_made:
-                                # SI NO SE HA HECHO EL MOVIMIENTO INTENTARA INSERTAR LA ASIGNATURA
-                                # PRIMERO SE BUSCARA SI UNA ASIGNATURA SERIADA POSTERIOR A LA ASIGNATURA ACTUAL
-                                # SE ENCUENTRA EN EN CUATRIMESTRES POSTERIORES
-                                able_to_insert = False
-                                find_asignatura = False
-                                index_cuatri_to_insert = -1
-                                index_cuatri_asig_seriada = -1
-                                # SE COMPRUEBA SI EXITEN ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA
-                                if asignaturas_seriadas_later[0] != "NSD":
-                                    # SI HAY ASIGNATURAS SERIADAS SE BUSCA LA MEJOR POSICION
-                                    for index_cuatri in range(len(plan_academico)):
-                                        if index_cuatri > cuatrimestre_indice:
+                                        if index_cuatri <= cuatrimestre_indice and index_cuatri > max_index_cuatri:
+                                            # SE RECORRE LAS ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA ACTUAL
                                             for mat_seriada in asignaturas_seriadas_later:
+                                                # SI ALGUNA DE LAS ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA ACTUAL SE ENCUENTRA
+                                                # EN ALGUN CUATRIMESTRE ANTERIOR AL ACTUAL
                                                 if mat_seriada in plan_academico[index_cuatri]:
-                                                    index_cuatri_asig_seriada = index_cuatri
-                                                    find_asignatura = True
-                                                    if index_cuatri_asig_seriada > (cuatrimestre_indice + 1):
-                                                        index_cuatri_to_insert = cuatrimestre_indice + 1
-                                                    break
-                                            if find_asignatura:
-                                                if index_cuatri_to_insert != -1:
-                                                    able_to_insert = True
-                                                break
-                                else:
-                                    index_cuatri_to_insert = len(plan_academico) - 1
-                                    able_to_insert = True
-                                # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
-                                if able_to_insert:
-                                    # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
-                                    validate = False
-                                    for cuatri in range(len(plan_academico)):
-                                        if cuatri >= index_cuatri_to_insert and cuatri < index_cuatri_asig_seriada and len(plan_academico[cuatri]) < 7:
-                                            aux_plan_academico = copy.deepcopy(plan_academico)
-                                            aux_plan_academico[cuatri].append(asignatura)
-                                            aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                            individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
-                                            validate = self.validacion(individuo_aux)
-                                            if validate:
-                                                plan_academico[cuatri].append(asignatura)
-                                                cuatrimestre.pop(index_mat_local)
-                                                move_made = True
-                                                break
-                                            else:
-                                                aux_plan_academico = []
-                                    if not move_made:
-                                        validate = False
-                                        # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
-                                        # ENTRE EL CUATRIMESTRE POSTERIOR AL ACTUAL Y EL CUATRIMESTRE INDICADO PARA LA INSERSION
-                                        for cuatri in range(len(plan_academico)):
-                                            if cuatri > cuatrimestre_indice and cuatri <= index_cuatri_asig_seriada:
-                                                for mat in plan_academico[cuatri]:
-                                                    # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
-                                                    # EN ESTE PLAN ACADEMICO AUXILIAR
-                                                    aux_plan_academico = copy.deepcopy(plan_academico)
-                                                    # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
-                                                    index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
-                                                    aux_plan_academico[cuatrimestre_indice].append(mat)
-                                                    aux_plan_academico[cuatri].append(asignatura)
-                                                    aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                                    aux_plan_academico[cuatri].pop(index_mat_to_swap)
-                                                    individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
-                                                    validate = self.validacion(individuo_aux)
-                                                    # SE VALIDA SI EL INTERCAMBIO DE ASIGNATURAS ES VALIDO COMO UN PLAN ACADEMICO
-                                                    if validate:
-                                                        # SI ES VALIDO, REALIZARA EL INTERCAMBIO EN EL PLAN ACADEMICO REAL
-                                                        plan_academico[cuatrimestre_indice].append(mat)
-                                                        plan_academico[cuatri].append(asignatura)
-                                                        plan_academico[cuatrimestre_indice].pop(index_mat_local)
-                                                        plan_academico[cuatri].pop(index_mat_to_swap)
+                                                    # SE GUARDA LA INFORMACION DEL INDICE DE ESE CUATRIMESTRE DENTRO DEL PLAN ACADEMICO
+                                                    # Y EL INDICE DE LA ASIGNATURA SERIADA
+                                                    able_to_swap = True
+                                                    index_cuatri_to_swap = index_cuatri
+                                                    index_mat_to_swap = plan_academico[index_cuatri].index(mat_seriada)
+                                    # SE VALIDA SI ES POSBILE HACER EL INTERCAMBIO, SIEMPRE Y CUANDO EL CUATRIMESTRE HABILITADO NO SEA EL ACTUAL
+                                    if able_to_swap and index_cuatri_to_swap != cuatrimestre_indice:
+                                        # SI ES VALIDO, SE HACE EL INTERCAMBIO DE ASIGNATURAS Y ACTUALIZA EL ESTATUS DEL MOVIMIENTO
+                                        cuatrimestre.append(plan_academico[index_cuatri_to_swap][index_mat_to_swap])
+                                        plan_academico[index_cuatri_to_swap].append(asignatura)
+                                        cuatrimestre.pop(index_mat_local)
+                                        plan_academico[index_cuatri_to_swap].pop(index_mat_to_swap)
+                                        move_made = True
+                                # SE VALIDA SI EL MOVIMIENTO NO SE HA HECHO (PORQUE NO ENCONTRO ASIGNATURAS SERIADAS POSTERIORES
+                                # EN CUATRIMESTRES ANTERIORES, O PORQUE ES UN NSD) 
+                                if not move_made:
+                                    # SI NO SE HA HECHO EL MOVIMIENTO INTENTARA INSERTAR LA ASIGNATURA
+                                    # PRIMERO SE BUSCARA SI UNA ASIGNATURA SERIADA ANTERIOR A LA ASIGNATURA ACTUAL
+                                    # SE ENCUENTRA EN EN CUATRIMESTRES ANTERIORES
+                                    able_to_insert = False
+                                    find_asignatura = False
+                                    index_cuatri_to_insert = -1
+                                    index_cuatri_asig_seriada = -1
+                                    # SE COMPRUEBA SI EXITEN ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA
+                                    if asignaturas_seriadas_earlier[0] != "NSD":
+                                        # SI HAY ASIGNATURAS SERIADAS SE BUSCA LA MEJOR POSICION
+                                        for index_cuatri in range(len(plan_academico)):
+                                            if index_cuatri <= cuatrimestre_indice:
+                                                for mat_seriada in asignaturas_seriadas_earlier:
+                                                    if mat_seriada in plan_academico[index_cuatri]:
+                                                        index_cuatri_asig_seriada = index_cuatri
+                                                        find_asignatura = True
+                                                        if index_cuatri_asig_seriada < (cuatrimestre_indice - 1):
+                                                            index_cuatri_to_insert = index_cuatri_asig_seriada + 1
                                                         break
+                                                if find_asignatura:
+                                                    if index_cuatri_to_insert != -1:
+                                                        able_to_insert = True
+                                                    break
+                                    else:
+                                        index_cuatri_to_insert = 0
+                                        able_to_insert = True
+                                    # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
+                                    if able_to_insert:
+                                        # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
+                                        validate = False
+                                        for cuatri in range(len(plan_academico)):
+                                            if cuatri >= index_cuatri_to_insert and cuatri < cuatrimestre_indice and len(plan_academico[cuatri]) < 7:
+                                                aux_plan_academico = copy.deepcopy(plan_academico)
+                                                aux_plan_academico[cuatri].append(asignatura)
+                                                aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                                validate = self.validacion(individuo_aux)
+                                                if validate:
+                                                    plan_academico[cuatri].append(asignatura)
+                                                    cuatrimestre.pop(index_mat_local)
+                                                    move_made = True
+                                                    break
+                                                else:
+                                                    aux_plan_academico = []
+                                        if not move_made:
+                                            validate = False
+                                            # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
+                                            # ENTRE EL CUATRIMESTRE EL CUATRIMESTRE INDICADO PARA LA INSERSION Y EL ANTERIOR AL ACTUAL
+                                            for cuatri in range(len(plan_academico)):
+                                                if cuatri < cuatrimestre_indice and cuatri >= index_cuatri_asig_seriada:
+                                                    for mat in plan_academico[cuatri]:
+                                                        # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
+                                                        # EN ESTE PLAN ACADEMICO AUXILIAR
+                                                        aux_plan_academico = copy.deepcopy(plan_academico)
+                                                        # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
+                                                        index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
+                                                        aux_plan_academico[cuatrimestre_indice].append(mat)
+                                                        aux_plan_academico[cuatri].append(asignatura)
+                                                        aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                        aux_plan_academico[cuatri].pop(index_mat_to_swap)
+                                                        individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                                        validate = self.validacion(individuo_aux)
+                                                        # SE VALIDA SI EL INTERCAMBIO DE ASIGNATURAS ES VALIDO COMO UN PLAN ACADEMICO
+                                                        if validate:
+                                                            # SI ES VALIDO, REALIZARA EL INTERCAMBIO EN EL PLAN ACADEMICO REAL
+                                                            plan_academico[cuatrimestre_indice].append(mat)
+                                                            plan_academico[cuatri].append(asignatura)
+                                                            plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                            plan_academico[cuatri].pop(index_mat_to_swap)
+                                                            break
+                            # SI ES EL ULTIMO CUATRIMESTRE SOLO PUEDE IR HACIA ATRAS
+                            elif (cuatrimestre_indice < (len(plan_academico) - 1)):
+                                # print("Movimiento adelante")
+                                if asignaturas_seriadas_earlier[0] != "NSD":
+                                    # SE INICIALIZAN DOS VARIABLES QUE GUARDAN EL ESTADO, SI ES POSIBLE O NO MOVER LA ASIGNATURA
+                                    # EL MAXIMO CUATRIMESTRE DISPONIBLE PARA MOVERSE (DADO POR LA ASIGNATURA SERIADA POSTERIOR)
+                                    # Y A QUE POSICION SE PODRIA MOVER
+                                    able_to_swap = False
+                                    index_cuatri_to_swap = -1   
+                                    index_mat_to_swap = -1
+                                    max_index_cuatri = len(plan_academico)
+                                    # SI LA SERIACION POSTERIOR A LA ASIGNATURA NO ES UN NSD (NO SERIADA), BUSCARA
+                                    # EL INDICE DEL MAXIMO CUATRIMESTRE EN EL QUE PUEDE BUSCAR PARA HACER EL
+                                    # INTERCAMBIO SIN AFETAR LA SERIACION
+                                    if asignaturas_seriadas_later[0] != "NSD":
+                                        for index_cuatri in range(len(plan_academico)):
+                                            if index_cuatri > cuatrimestre_indice:
+                                                for asig_seriad in asignaturas_seriadas_later:
+                                                    if asig_seriad in plan_academico[index_cuatri]:
+                                                        max_index_cuatri = index_cuatri
+                                    # SE RECORRE EL PLAN ACADEMICO A PARTIR DEL CUATRIMESTRE QUE SE ESTA EVALUANDO ACTUALMENTE                             
+                                    for index_cuatri in range(len(plan_academico)):
+                                        if index_cuatri >= cuatrimestre_indice and index_cuatri < max_index_cuatri:
+                                            # SE RECORRE LAS ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA ACTUAL
+                                            for mat_seriada in asignaturas_seriadas_earlier:
+                                                # SI ALGUNA DE LAS ASIGNATURAS SERIADAS ANTERIORES A LA ASIGNATURA ACTUAL SE ENCUENTRA
+                                                # EN ALGUN CUATRIMESTRE POSTERIOR AL ACTUAL
+                                                if mat_seriada in plan_academico[index_cuatri]:
+                                                    # SE GUARDA LA INFORMACION DEL INDICE DE ESE CUATRIMESTRE DENTRO DEL PLAN ACADEMICO
+                                                    # Y EL INDICE DE LA ASIGNATURA SERIADA
+                                                    able_to_swap = True
+                                                    index_cuatri_to_swap = index_cuatri
+                                                    index_mat_to_swap = plan_academico[index_cuatri].index(mat_seriada)
+                                    # SE VALIDA SI ES POSBILE HACER EL INTERCAMBIO, SIEMPRE Y CUANDO EL CUATRIMESTRE HABILITADO NO SEA EL ACTUAL
+                                    if able_to_swap and index_cuatri_to_swap != cuatrimestre_indice:
+                                        # SI ES VALIDO, SE HACE EL INTERCAMBIO DE ASIGNATURAS Y ACTUALIZA EL ESTATUS DEL MOVIMIENTO
+                                        cuatrimestre.append(plan_academico[index_cuatri_to_swap][index_mat_to_swap])
+                                        plan_academico[index_cuatri_to_swap].append(asignatura)
+                                        cuatrimestre.pop(index_mat_local)
+                                        plan_academico[index_cuatri_to_swap].pop(index_mat_to_swap)
+                                        move_made = True
+                                # SE VALIDA SI EL MOVIMIENTO NO SE HA HECHO (PORQUE NO ENCONTRO ASIGNATURAS SERIADAS ANTERIORES
+                                # EN CUATRIMESTRES POSTERIORES, O PORQUE ES UN NSD) 
+                                if not move_made:
+                                    # SI NO SE HA HECHO EL MOVIMIENTO INTENTARA INSERTAR LA ASIGNATURA
+                                    # PRIMERO SE BUSCARA SI UNA ASIGNATURA SERIADA POSTERIOR A LA ASIGNATURA ACTUAL
+                                    # SE ENCUENTRA EN EN CUATRIMESTRES POSTERIORES
+                                    able_to_insert = False
+                                    find_asignatura = False
+                                    index_cuatri_to_insert = -1
+                                    index_cuatri_asig_seriada = -1
+                                    # SE COMPRUEBA SI EXITEN ASIGNATURAS SERIADAS POSTERIORES A LA ASIGNATURA
+                                    if asignaturas_seriadas_later[0] != "NSD":
+                                        # SI HAY ASIGNATURAS SERIADAS SE BUSCA LA MEJOR POSICION
+                                        for index_cuatri in range(len(plan_academico)):
+                                            if index_cuatri > cuatrimestre_indice:
+                                                for mat_seriada in asignaturas_seriadas_later:
+                                                    if mat_seriada in plan_academico[index_cuatri]:
+                                                        index_cuatri_asig_seriada = index_cuatri
+                                                        find_asignatura = True
+                                                        if index_cuatri_asig_seriada > (cuatrimestre_indice + 1):
+                                                            index_cuatri_to_insert = cuatrimestre_indice + 1
+                                                        break
+                                                if find_asignatura:
+                                                    if index_cuatri_to_insert != -1:
+                                                        able_to_insert = True
+                                                    break
+                                    else:
+                                        index_cuatri_to_insert = len(plan_academico) - 1
+                                        able_to_insert = True
+                                    # SE VALIDA SI EXISTE UNA ASIGNATURA SERIADA POSTERIOR, Y SI ES POSIBLE HACER LA INSERSION
+                                    if able_to_insert:
+                                        # SE VALIDA SI ES POSIBLE INSERTAR LA ASIGNATURA EN EL CUATRIMESTRE INDICADO
+                                        validate = False
+                                        for cuatri in range(len(plan_academico)):
+                                            if cuatri >= index_cuatri_to_insert and cuatri < index_cuatri_asig_seriada and len(plan_academico[cuatri]) < 7:
+                                                aux_plan_academico = copy.deepcopy(plan_academico)
+                                                aux_plan_academico[cuatri].append(asignatura)
+                                                aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                                validate = self.validacion(individuo_aux)
+                                                if validate:
+                                                    plan_academico[cuatri].append(asignatura)
+                                                    cuatrimestre.pop(index_mat_local)
+                                                    move_made = True
+                                                    break
+                                                else:
+                                                    aux_plan_academico = []
+                                        if not move_made:
+                                            validate = False
+                                            # SI NO ES POSIBLE, TRATARA DE INTERCAMBIARALA CON ALGUNA DE LAS ASIGNATURAS
+                                            # ENTRE EL CUATRIMESTRE POSTERIOR AL ACTUAL Y EL CUATRIMESTRE INDICADO PARA LA INSERSION
+                                            for cuatri in range(len(plan_academico)):
+                                                if cuatri > cuatrimestre_indice and cuatri <= index_cuatri_asig_seriada:
+                                                    for mat in plan_academico[cuatri]:
+                                                        # SE HACE UNA COPIA DEL PLAN ACADEMICO ACTUAL, PARA REALIZAR LAS VALIDACIONES 
+                                                        # EN ESTE PLAN ACADEMICO AUXILIAR
+                                                        aux_plan_academico = copy.deepcopy(plan_academico)
+                                                        # SE REALIZA EL INTERCAMBIO SOBRE EL PLAN ACADEMICO AUXILIAR
+                                                        index_mat_to_swap = aux_plan_academico[cuatri].index(mat)
+                                                        aux_plan_academico[cuatrimestre_indice].append(mat)
+                                                        aux_plan_academico[cuatri].append(asignatura)
+                                                        aux_plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                        aux_plan_academico[cuatri].pop(index_mat_to_swap)
+                                                        individuo_aux = Individuo(random.randint(100,1000), self.bloque, aux_plan_academico)
+                                                        validate = self.validacion(individuo_aux)
+                                                        # SE VALIDA SI EL INTERCAMBIO DE ASIGNATURAS ES VALIDO COMO UN PLAN ACADEMICO
+                                                        if validate:
+                                                            # SI ES VALIDO, REALIZARA EL INTERCAMBIO EN EL PLAN ACADEMICO REAL
+                                                            plan_academico[cuatrimestre_indice].append(mat)
+                                                            plan_academico[cuatri].append(asignatura)
+                                                            plan_academico[cuatrimestre_indice].pop(index_mat_local)
+                                                            plan_academico[cuatri].pop(index_mat_to_swap)
+                                                            break
+        if len(plan_academico[-1]) == 0:
+            plan_academico.pop()
         return plan_academico
 
     # CORRECION DE LOS INDIVIDUOS
